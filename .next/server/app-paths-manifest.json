@@ -1,1 +1,6 @@
-{}
+{
+  "/hr/[[...slug]]/page": "app/hr/[[...slug]]/page.js",
+  "/page": "app/page.js",
+  "/outpatient/[[...slug]]/page": "app/outpatient/[[...slug]]/page.js",
+  "/inpatient/[[...slug]]/page": "app/inpatient/[[...slug]]/page.js"
+}
