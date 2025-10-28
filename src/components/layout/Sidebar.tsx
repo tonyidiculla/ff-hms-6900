@@ -15,7 +15,7 @@ interface NavigationChild {
 interface NavigationItem {
   name: string;
   href?: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   children?: NavigationChild[];
   isSeparator?: boolean;
 }
@@ -100,6 +100,19 @@ const defaultNavigation: NavigationItem[] = [
       { name: 'Lab Tests', href: '/diagnostics/lab' },
     ],
   },
+  {
+    name: 'Communication',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    ),
+    children: [
+      { name: 'Chat Channels', href: '/chat' },
+      { name: 'Messages', href: '/chat/messages' },
+      { name: 'Create Channel', href: '/chat/create' },
+    ],
+  },
   // Separator
   {
     name: 'separator',
@@ -123,6 +136,15 @@ const defaultNavigation: NavigationItem[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     ),
+    children: [
+      { name: 'Dashboard', href: '/hr' },
+      { name: 'Employees', href: '/hr/employees' },
+      { name: 'Attendance', href: '/hr/attendance' },
+      { name: 'Leave', href: '/hr/leave' },
+      { name: 'Performance', href: '/hr/performance' },
+      { name: 'Training', href: '/hr/training' },
+
+    ],
   },
   {
     name: 'Purchasing',
@@ -132,15 +154,14 @@ const defaultNavigation: NavigationItem[] = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     ),
-  },
-  {
-    name: 'Rostering',
-    href: '/rostering',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
+    children: [
+      { name: 'Dashboard', href: '/purchasing' },
+      { name: 'Purchase Orders', href: '/purchasing/purchase-orders' },
+      { name: 'Suppliers', href: '/purchasing/suppliers' },
+      { name: 'Inventory', href: '/purchasing/inventory' },
+      { name: 'Procurement', href: '/purchasing/procurement' },
+      { name: 'Reports', href: '/purchasing/reports' },
+    ],
   },
 ];
 
@@ -150,6 +171,11 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
   // Helper function to append auth token to cross-origin URLs
   const appendAuthToken = (href: string): string => {
     // Only append token to external URLs (different origins)
+    // Skip auth token for internal HMS routes (relative paths starting with /)
+    if (href.startsWith('/')) {
+      return href; // Internal HMS route - use as-is
+    }
+    
     if (href.startsWith('http://localhost:') && !href.includes(window.location.port)) {
       const token = document.cookie
         .split('; ')
@@ -165,13 +191,36 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
     return href;
   };
   
-  // Auto-expand Finance if on a finance page
-  const initialExpanded = ['Outpatient'];
-  if (pathname.startsWith('/books') || pathname.startsWith('/accounts') || 
-      pathname.startsWith('/transactions') || pathname.startsWith('/reports')) {
-    initialExpanded.push('Finance');
-  }
-  const [expandedItems, setExpandedItems] = React.useState<string[]>(initialExpanded);
+  // Auto-expand sections based on current route
+  const getInitialExpanded = () => {
+    const expanded = ['Outpatient'];
+    
+    // Auto-expand Finance if on a finance page
+    if (pathname.startsWith('/books') || pathname.startsWith('/accounts') || 
+        pathname.startsWith('/transactions') || pathname.startsWith('/reports')) {
+      expanded.push('Finance');
+    }
+    
+    // Auto-expand Purchasing if on a purchasing page
+    if (pathname.startsWith('/purchasing')) {
+      expanded.push('Purchasing');
+    }
+    
+    // Auto-expand HRMS if on an HR page
+    if (pathname.startsWith('/hr')) {
+      expanded.push('HRMS');
+    }
+    
+    return expanded;
+  };
+
+  const [expandedItems, setExpandedItems] = React.useState<string[]>(getInitialExpanded);
+
+  // Add effect to update expanded items when path changes
+  React.useEffect(() => {
+    const newExpanded = getInitialExpanded();
+    setExpandedItems(newExpanded);
+  }, [pathname]);
 
   // Use provided navigation or fall back to default
   const navItems = navigation || defaultNavigation;
@@ -189,49 +238,76 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
           // Handle separator
           if (item.isSeparator) {
             return (
-              <div key={`separator-${index}`} className="py-3">
-                <div className="border-t border-gray-200"></div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-3 px-4">
-                  Other Modules
+              <div key={`separator-${index}`} className="py-6 my-4">
+                <div className="border-t-2 border-gray-400 mx-2"></div>
+                <p className="text-xs font-bold text-gray-600 uppercase tracking-wider mt-4 px-4 bg-gray-50 py-2 rounded">
+                  🏢 Other Modules
                 </p>
               </div>
             );
           }
 
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || 
+                    (item.href && pathname.startsWith(item.href) && item.href !== '/');
           const isExpanded = expandedItems.includes(item.name);
           const hasChildren = item.children && item.children.length > 0;
 
           return (
-            <div key={item.name}>
+            <div key={item.name} className="relative group">
               {hasChildren ? (
-                <div className="flex items-center gap-1">
-                  <Link
-                    href={appendAuthToken(item.children![0].href)}
-                    className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all flex-1',
-                      'hover:bg-blue-50 hover:text-blue-700 text-gray-700'
-                    )}
-                  >
-                    {item.icon}
-                    {item.name}
-                  </Link>
-                  <button
-                    onClick={() => toggleExpanded(item.name)}
-                    className={cn(
-                      'p-3 rounded-xl text-sm font-medium transition-all',
-                      'hover:bg-blue-50 hover:text-blue-700'
-                    )}
-                  >
-                    <svg
-                      className={cn('w-4 h-4 transition-transform', isExpanded && 'rotate-90')}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                <div>
+                  {item.name === 'Communication' ? (
+                    <div className="flex items-center justify-center px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all">
+                      {item.icon}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => toggleExpanded(item.name)}
+                      className={cn(
+                        'flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                        'hover:bg-blue-50 hover:text-blue-700 text-gray-700 text-left'
+                      )}
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
+                      <div className="flex items-center gap-3">
+                        {item.icon}
+                        {item.name}
+                      </div>
+                      <svg
+                        className={cn('w-4 h-4 transition-transform', isExpanded && 'rotate-90')}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
+                  
+                  {/* Hover dropdown for Communication */}
+                  {item.name === 'Communication' && (
+                    <div className="absolute left-full top-0 ml-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 hover:opacity-100 hover:visible">
+                      <div className="py-2">
+                        {item.children!.map((child) => {
+                          const isChildActive = pathname === child.href || 
+                                              (pathname.startsWith(child.href) && child.href !== '/');
+                          return (
+                            <Link
+                              key={child.href}
+                              href={appendAuthToken(child.href)}
+                              className={cn(
+                                'block px-4 py-2.5 text-sm transition-all hover:bg-blue-50 hover:text-blue-600',
+                                isChildActive
+                                  ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-medium'
+                                  : 'text-gray-700'
+                              )}
+                            >
+                              {child.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Link
@@ -248,10 +324,11 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
                 </Link>
               )}
               
-              {hasChildren && isExpanded && (
+              {hasChildren && isExpanded && item.name !== 'Communication' && (
                 <div className="ml-8 mt-1 space-y-1">
                   {item.children!.map((child) => {
-                    const isChildActive = pathname === child.href;
+                    const isChildActive = pathname === child.href || 
+                                        (pathname.startsWith(child.href) && child.href !== '/');
                     return (
                       <Link
                         key={child.href}
@@ -259,7 +336,7 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
                         className={cn(
                           'block px-4 py-2.5 rounded-lg text-sm transition-all',
                           isChildActive
-                            ? 'bg-blue-100 text-blue-700 font-medium'
+                            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg font-medium'
                             : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
                         )}
                       >

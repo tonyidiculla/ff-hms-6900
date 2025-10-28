@@ -3,7 +3,18 @@
 import { ServiceFrame } from '@/components/ServiceFrame';
 import { usePathname } from 'next/navigation';
 
-export default function PurchasingPage() {
-  // Purchasing only has root page, so always load root
-  return <ServiceFrame url={`http://localhost:6870/`} serviceName="Purchasing Service" />;
+interface PurchasingPageProps {
+  params: Promise<{
+    slug?: string[];
+  }>;
+}
+
+export default function PurchasingPage({ params }: PurchasingPageProps) {
+  const pathname = usePathname();
+  
+  // Extract the path after /purchasing
+  const subPath = pathname.replace('/purchasing', '') || '/';
+  const serviceUrl = `http://localhost:6870${subPath}`;
+  
+  return <ServiceFrame url={serviceUrl} serviceName="Purchasing Service" />;
 }

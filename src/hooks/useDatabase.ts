@@ -272,7 +272,7 @@ export function useCreatePet() {
       return data as PetMaster
     },
     onSuccess: (data: PetMaster) => {
-      queryClient.invalidateQueries({ queryKey: ['pets', data.user_platform_id] })
+      queryClient.invalidateQueries({ queryKey: ['pets', data.owner_user_platform_id] })
     },
   })
 }
@@ -297,7 +297,7 @@ export function useUpdatePet() {
     },
     onSuccess: (data: PetMaster) => {
       queryClient.invalidateQueries({ queryKey: ['pet', data.id] })
-      queryClient.invalidateQueries({ queryKey: ['pets', data.user_platform_id] })
+      queryClient.invalidateQueries({ queryKey: ['pets', data.owner_user_platform_id] })
     },
   })
 }
@@ -321,7 +321,7 @@ export function useDeletePet() {
       return data as PetMaster
     },
     onSuccess: (data: PetMaster) => {
-      queryClient.invalidateQueries({ queryKey: ['pets', data.user_platform_id] })
+      queryClient.invalidateQueries({ queryKey: ['pets', data.owner_user_platform_id] })
     },
   })
 }

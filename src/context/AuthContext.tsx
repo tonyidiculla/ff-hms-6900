@@ -48,19 +48,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     const token = Cookies.get('furfield_token');
     
+    console.log('[AuthContext] Checking auth, token exists:', !!token);
+    
     if (!token) {
+      console.log('[AuthContext] No token found, setting loading to false');
       setLoading(false);
       return;
     }
 
     try {
+      console.log('[AuthContext] Fetching profile from:', `${AUTH_SERVICE_URL}/api/auth/profile`);
       const response = await axios.get(`${AUTH_SERVICE_URL}/api/auth/profile`, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000
       });
       
+      console.log('[AuthContext] Profile response:', response.data);
+      
       if (response.data.success) {
         const userData = response.data.data?.user || response.data.user;
+        console.log('[AuthContext] User data:', userData);
         if (userData) {
           setUser(userData);
         }
@@ -68,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       // Silently handle auth errors - middleware will handle redirects
       // Do NOT remove the cookie here - let middleware handle auth
+      console.error('[AuthContext] Auth check failed:', error.response?.data || error.message);
       console.log('Auth check failed, but keeping cookie for middleware to handle');
     } finally {
       setLoading(false);
