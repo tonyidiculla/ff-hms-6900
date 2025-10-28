@@ -15,7 +15,7 @@ interface NavigationChild {
 interface NavigationItem {
   name: string;
   href?: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   children?: NavigationChild[];
   isSeparator?: boolean;
 }
@@ -117,12 +117,20 @@ const defaultNavigation: NavigationItem[] = [
   },
   {
     name: 'HRMS',
-    href: 'http://localhost:6860',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     ),
+    children: [
+      { name: 'Dashboard', href: 'http://localhost:6860' },
+      { name: 'Employees', href: 'http://localhost:6860/employees' },
+      { name: 'Attendance', href: 'http://localhost:6860/attendance' },
+      { name: 'Leave Management', href: 'http://localhost:6860/leave' },
+      { name: 'Performance', href: 'http://localhost:6860/performance' },
+      { name: 'Training', href: 'http://localhost:6860/training' },
+      { name: 'Rostering', href: '/rostering' },
+    ],
   },
   {
     name: 'Purchasing',
@@ -133,20 +141,62 @@ const defaultNavigation: NavigationItem[] = [
       </svg>
     ),
   },
-  {
-    name: 'Rostering',
-    href: 'http://localhost:6840',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
 ];
 
 export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
   const pathname = usePathname();
-  const [expandedItems, setExpandedItems] = React.useState<string[]>(['Outpatient']);
+  
+  // Function to determine which items should be expanded based on current path
+  const getExpandedItems = () => {
+    const expanded: string[] = []; // Start with nothing expanded
+    
+    // Auto-expand based on current route
+    if (pathname.startsWith('/outpatient')) {
+      expanded.push('Outpatient');
+    }
+    if (pathname.startsWith('/hr') || pathname.includes('6860')) {
+      expanded.push('HR');
+    }
+    if (pathname.startsWith('/rostering')) {
+      expanded.push('HR'); // Rostering is a child of HR
+    }
+    if (pathname.startsWith('/purchasing')) {
+      expanded.push('Purchasing');
+    }
+    if (pathname.startsWith('/finance')) {
+      expanded.push('Finance');
+    }
+    if (pathname.startsWith('/inpatient')) {
+      expanded.push('Inpatient');
+    }
+    if (pathname.startsWith('/operation-theater')) {
+      expanded.push('Operation Theater');
+    }
+    if (pathname.startsWith('/pharmacy')) {
+      expanded.push('Pharmacy');
+    }
+    if (pathname.startsWith('/diagnostics')) {
+      expanded.push('Diagnostics');
+    }
+    if (pathname.startsWith('/chat')) {
+      expanded.push('Chat');
+    }
+    if (pathname.startsWith('/facility')) {
+      expanded.push('Facility');
+    }
+    if (pathname.startsWith('/analytics')) {
+      expanded.push('Analytics');
+    }
+    
+    return expanded;
+  };
+
+  const [expandedItems, setExpandedItems] = React.useState<string[]>(getExpandedItems);
+
+  // Update expanded items when pathname changes
+  React.useEffect(() => {
+    setExpandedItems(getExpandedItems());
+  }, [pathname]);
 
   // Use provided navigation or fall back to default
   const navItems = navigation || defaultNavigation;
@@ -158,48 +208,80 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
   };
 
   return (
-    <aside className="w-64 bg-white shadow-lg border-r border-gray-200">
+    <aside className="w-64 bg-white/40 backdrop-blur-md shadow-lg border-r border-white/20">
       <nav className="p-4 space-y-1">
         {navItems.map((item, index) => {
           // Handle separator
           if (item.isSeparator) {
             return (
-              <div key={`separator-${index}`} className="py-3">
+              <div key={`separator-${index}`} className="py-0.5">
                 <div className="border-t border-gray-200"></div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-3 px-4">
-                  Other Modules
-                </p>
               </div>
             );
           }
 
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || 
+                    (item.href && pathname.startsWith(item.href) && item.href !== '/');
           const isExpanded = expandedItems.includes(item.name);
           const hasChildren = item.children && item.children.length > 0;
 
           return (
-            <div key={item.name}>
+            <div key={item.name} className="relative group">
               {hasChildren ? (
-                <button
-                  onClick={() => toggleExpanded(item.name)}
-                  className={cn(
-                    'flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all',
-                    'hover:bg-blue-50 hover:text-blue-700'
+                <div>
+                  {item.name === 'Chat' ? (
+                    <div className="flex items-center px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all">
+                      {item.icon}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => toggleExpanded(item.name)}
+                      className={cn(
+                        'flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-medium transition-all',
+                        'hover:bg-blue-50 hover:text-blue-700'
+                      )}
+                    >
+                      <span className="flex items-center gap-3">
+                        {item.icon}
+                        {item.name}
+                      </span>
+                      <svg
+                        className={cn('w-4 h-4 transition-transform', isExpanded && 'rotate-90')}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
                   )}
-                >
-                  <span className="flex items-center gap-3">
-                    {item.icon}
-                    {item.name}
-                  </span>
-                  <svg
-                    className={cn('w-4 h-4 transition-transform', isExpanded && 'rotate-90')}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                  
+                  {/* Hover dropdown for Chat */}
+                  {item.name === 'Chat' && (
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-white shadow-lg rounded-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 hover:opacity-100 hover:visible">
+                      <div className="py-2">
+                        {item.children!.map((child) => {
+                          const isChildActive = pathname === child.href || 
+                                              (pathname.startsWith(child.href) && child.href !== '/');
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              className={cn(
+                                'block px-4 py-2.5 text-sm transition-all hover:bg-blue-50 hover:text-blue-600',
+                                isChildActive
+                                  ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-medium'
+                                  : 'text-gray-700'
+                              )}
+                            >
+                              {child.name}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Link
                   href={item.href!}
@@ -215,10 +297,11 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
                 </Link>
               )}
               
-              {hasChildren && isExpanded && (
+              {hasChildren && isExpanded && item.name !== 'Chat' && (
                 <div className="ml-8 mt-1 space-y-1">
                   {item.children!.map((child) => {
-                    const isChildActive = pathname === child.href;
+                    const isChildActive = pathname === child.href || 
+                                        (pathname.startsWith(child.href) && child.href !== '/');
                     return (
                       <Link
                         key={child.href}

@@ -45,13 +45,32 @@ const nextConfig = {
         source: '/api/hr/:path*',
         destination: 'http://localhost:6860/api/:path*',
       },
-      {
-        source: '/api/rostering/:path*',
-        destination: 'http://localhost:6840/api/:path*',
-      },
+
       {
         source: '/api/purchasing/:path*',
         destination: 'http://localhost:6870/api/:path*',
+      },
+      {
+        source: '/api/chat/:path*',
+        destination: 'http://localhost:6880/api/:path*',
+      },
+      {
+        source: '/api/facility/:path*',
+        destination: 'http://localhost:6840/api/:path*',
+      },
+      {
+        source: '/api/analytics/:path*',
+        destination: 'http://localhost:6820/api/:path*',
+      },
+
+      // Page-level proxy for auth service (standalone, not embedded in HMS)
+      {
+        source: '/auth',
+        destination: 'http://localhost:6800/',
+      },
+      {
+        source: '/auth/:path*',
+        destination: 'http://localhost:6800/:path*',
       },
     ]
   },
