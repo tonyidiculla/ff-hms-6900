@@ -1,0 +1,586 @@
+/**
+ * Furfield HMS - Global Design System CSS
+ * Complete color scheme and styling for Hospital Management System
+ * Apply this to all HMS modules for consistent design
+ */
+
+@import "tailwindcss";
+
+/* ================================
+   HMS COLOR SYSTEM
+   ================================ */
+
+:root {
+  /* Core Brand Colors */
+  --hms-primary: #2563eb;
+  --hms-primary-dark: #1d4ed8;
+  --hms-primary-light: #dbeafe;
+  --hms-primary-foreground: #ffffff;
+  
+  --hms-secondary: #64748b;
+  --hms-secondary-dark: #475569;
+  --hms-secondary-light: #f1f5f9;
+  --hms-secondary-foreground: #ffffff;
+  
+  --hms-accent: #059669;
+  --hms-accent-light: #d1fae5;
+  --hms-accent-dark: #047857;
+  
+  /* Status Colors */
+  --hms-success: #10b981;
+  --hms-success-light: #d1fae5;
+  --hms-success-dark: #047857;
+  --hms-success-foreground: #ffffff;
+  
+  --hms-warning: #f59e0b;
+  --hms-warning-light: #fef3c7;
+  --hms-warning-dark: #d97706;
+  --hms-warning-foreground: #ffffff;
+  
+  --hms-error: #ef4444;
+  --hms-error-light: #fee2e2;
+  --hms-error-dark: #dc2626;
+  --hms-error-foreground: #ffffff;
+  
+  --hms-info: #3b82f6;
+  --hms-info-light: #dbeafe;
+  --hms-info-dark: #2563eb;
+  --hms-info-foreground: #ffffff;
+  
+  /* Department Colors */
+  --dept-outpatient: #3b82f6;
+  --dept-inpatient: #8b5cf6;
+  --dept-emergency: #ef4444;
+  --dept-surgery: #f59e0b;
+  --dept-pharmacy: #059669;
+  --dept-laboratory: #06b6d4;
+  --dept-radiology: #6366f1;
+  --dept-admin: #64748b;
+  
+  /* Background & Surface */
+  --hms-background: #ffffff;
+  --hms-surface: #f8fafc;
+  --hms-muted: #f1f5f9;
+  --hms-border: #e2e8f0;
+  
+  /* Text Colors */
+  --hms-text-primary: #0f172a;
+  --hms-text-secondary: #475569;
+  --hms-text-muted: #64748b;
+  --hms-text-disabled: #94a3b8;
+  
+  /* Shadows */
+  --hms-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --hms-shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --hms-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --hms-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --hms-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Border Radius */
+  --hms-radius-sm: 0.25rem;
+  --hms-radius-base: 0.375rem;
+  --hms-radius-md: 0.5rem;
+  --hms-radius-lg: 0.75rem;
+  --hms-radius-xl: 1rem;
+  --hms-radius-full: 9999px;
+  
+  /* Spacing */
+  --hms-space-1: 0.25rem;
+  --hms-space-2: 0.5rem;
+  --hms-space-3: 0.75rem;
+  --hms-space-4: 1rem;
+  --hms-space-5: 1.25rem;
+  --hms-space-6: 1.5rem;
+  --hms-space-8: 2rem;
+  --hms-space-10: 2.5rem;
+  --hms-space-12: 3rem;
+  --hms-space-16: 4rem;
+  --hms-space-20: 5rem;
+  --hms-space-24: 6rem;
+  
+  /* Container Sizes */
+  --hms-container-main: 1400px;
+  --hms-container-sidebar: 280px;
+  --hms-container-header: 72px;
+  
+  /* Typography */
+  --hms-font-size-xs: 0.75rem;
+  --hms-font-size-sm: 0.875rem;
+  --hms-font-size-base: 1rem;
+  --hms-font-size-lg: 1.125rem;
+  --hms-font-size-xl: 1.25rem;
+  --hms-font-size-2xl: 1.5rem;
+  --hms-font-size-3xl: 1.875rem;
+  --hms-font-size-4xl: 2.25rem;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hms-background: #0f172a;
+    --hms-surface: #1e293b;
+    --hms-muted: #334155;
+    --hms-border: #475569;
+    --hms-text-primary: #f1f5f9;
+    --hms-text-secondary: #cbd5e1;
+    --hms-text-muted: #94a3b8;
+  }
+}
+
+/* ================================
+   BASE STYLES
+   ================================ */
+
+* {
+  box-sizing: border-box;
+  border-color: var(--hms-border);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--hms-surface);
+  color: var(--hms-text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ================================
+   LAYOUT COMPONENTS
+   ================================ */
+
+.hms-page-container {
+  min-height: 100vh;
+  background: var(--hms-surface);
+}
+
+.hms-main-layout {
+  max-width: var(--hms-container-main);
+  margin: 0 auto;
+  background: var(--hms-background);
+  min-height: 100vh;
+  box-shadow: var(--hms-shadow-lg);
+}
+
+.hms-header {
+  background: var(--hms-background);
+  border-bottom: 1px solid var(--hms-border);
+  height: var(--hms-container-header);
+  padding: 0 var(--hms-space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(8px);
+}
+
+.hms-content-wrapper {
+  padding: var(--hms-space-6);
+  background: var(--hms-surface);
+}
+
+.hms-sidebar {
+  width: var(--hms-container-sidebar);
+  background: var(--hms-background);
+  border-right: 1px solid var(--hms-border);
+  height: calc(100vh - var(--hms-container-header));
+  overflow-y: auto;
+  position: sticky;
+  top: var(--hms-container-header);
+}
+
+/* ================================
+   CARD COMPONENTS
+   ================================ */
+
+.hms-card {
+  background: var(--hms-background);
+  border: 1px solid var(--hms-border);
+  border-radius: var(--hms-radius-lg);
+  box-shadow: var(--hms-shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.hms-card:hover {
+  box-shadow: var(--hms-shadow-md);
+}
+
+.hms-card-header {
+  padding: var(--hms-space-6);
+  border-bottom: 1px solid var(--hms-border);
+  background: var(--hms-background);
+}
+
+.hms-card-content {
+  padding: var(--hms-space-6);
+}
+
+.hms-card-title {
+  font-size: var(--hms-font-size-lg);
+  font-weight: 600;
+  color: var(--hms-text-primary);
+  margin: 0;
+}
+
+.hms-card-description {
+  font-size: var(--hms-font-size-sm);
+  color: var(--hms-text-secondary);
+  margin-top: var(--hms-space-1);
+}
+
+/* ================================
+   BUTTON COMPONENTS
+   ================================ */
+
+.hms-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--hms-space-2);
+  padding: var(--hms-space-3) var(--hms-space-4);
+  border: none;
+  border-radius: var(--hms-radius-md);
+  font-size: var(--hms-font-size-sm);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.hms-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hms-btn-primary {
+  background: var(--hms-primary);
+  color: var(--hms-primary-foreground);
+}
+
+.hms-btn-primary:hover:not(:disabled) {
+  background: var(--hms-primary-dark);
+  box-shadow: var(--hms-shadow-md);
+}
+
+.hms-btn-secondary {
+  background: var(--hms-background);
+  color: var(--hms-text-primary);
+  border: 1px solid var(--hms-border);
+}
+
+.hms-btn-secondary:hover:not(:disabled) {
+  background: var(--hms-muted);
+  border-color: var(--hms-secondary);
+}
+
+.hms-btn-success {
+  background: var(--hms-success);
+  color: var(--hms-success-foreground);
+}
+
+.hms-btn-success:hover:not(:disabled) {
+  background: var(--hms-success-dark);
+}
+
+.hms-btn-warning {
+  background: var(--hms-warning);
+  color: var(--hms-warning-foreground);
+}
+
+.hms-btn-warning:hover:not(:disabled) {
+  background: var(--hms-warning-dark);
+}
+
+.hms-btn-error {
+  background: var(--hms-error);
+  color: var(--hms-error-foreground);
+}
+
+.hms-btn-error:hover:not(:disabled) {
+  background: var(--hms-error-dark);
+}
+
+.hms-btn-ghost {
+  background: transparent;
+  color: var(--hms-text-secondary);
+}
+
+.hms-btn-ghost:hover:not(:disabled) {
+  background: var(--hms-muted);
+  color: var(--hms-text-primary);
+}
+
+/* Button Sizes */
+.hms-btn-sm {
+  padding: var(--hms-space-2) var(--hms-space-3);
+  font-size: var(--hms-font-size-xs);
+}
+
+.hms-btn-lg {
+  padding: var(--hms-space-4) var(--hms-space-6);
+  font-size: var(--hms-font-size-base);
+}
+
+/* ================================
+   BADGE COMPONENTS
+   ================================ */
+
+.hms-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hms-space-1);
+  padding: var(--hms-space-1) var(--hms-space-3);
+  border-radius: var(--hms-radius-full);
+  font-size: var(--hms-font-size-xs);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.hms-badge-success {
+  background: var(--hms-success-light);
+  color: var(--hms-success-dark);
+}
+
+.hms-badge-warning {
+  background: var(--hms-warning-light);
+  color: var(--hms-warning-dark);
+}
+
+.hms-badge-error {
+  background: var(--hms-error-light);
+  color: var(--hms-error-dark);
+}
+
+.hms-badge-info {
+  background: var(--hms-info-light);
+  color: var(--hms-info-dark);
+}
+
+.hms-badge-secondary {
+  background: var(--hms-secondary-light);
+  color: var(--hms-secondary-dark);
+}
+
+/* ================================
+   FORM COMPONENTS
+   ================================ */
+
+.hms-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--hms-space-2);
+}
+
+.hms-label {
+  font-size: var(--hms-font-size-sm);
+  font-weight: 500;
+  color: var(--hms-text-primary);
+}
+
+.hms-input {
+  width: 100%;
+  padding: var(--hms-space-3);
+  border: 1px solid var(--hms-border);
+  border-radius: var(--hms-radius-md);
+  font-size: var(--hms-font-size-sm);
+  background: var(--hms-background);
+  color: var(--hms-text-primary);
+  transition: all 0.2s ease;
+}
+
+.hms-input:focus {
+  outline: none;
+  border-color: var(--hms-primary);
+  box-shadow: 0 0 0 3px var(--hms-primary-light);
+}
+
+.hms-input::placeholder {
+  color: var(--hms-text-muted);
+}
+
+.hms-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.hms-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right var(--hms-space-3) center;
+  background-repeat: no-repeat;
+  background-size: 1em;
+  padding-right: var(--hms-space-10);
+}
+
+/* ================================
+   TABLE COMPONENTS
+   ================================ */
+
+.hms-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--hms-border);
+  border-radius: var(--hms-radius-lg);
+  overflow: hidden;
+}
+
+.hms-table th {
+  background: var(--hms-muted);
+  padding: var(--hms-space-4);
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--hms-font-size-sm);
+  color: var(--hms-text-primary);
+  border-bottom: 1px solid var(--hms-border);
+}
+
+.hms-table td {
+  padding: var(--hms-space-4);
+  border-bottom: 1px solid var(--hms-border);
+  font-size: var(--hms-font-size-sm);
+  color: var(--hms-text-primary);
+}
+
+.hms-table tr:last-child td {
+  border-bottom: none;
+}
+
+.hms-table tr:hover {
+  background: var(--hms-muted);
+}
+
+/* ================================
+   UTILITY CLASSES
+   ================================ */
+
+/* Department Colors */
+.dept-outpatient { color: var(--dept-outpatient); }
+.dept-inpatient { color: var(--dept-inpatient); }
+.dept-emergency { color: var(--dept-emergency); }
+.dept-surgery { color: var(--dept-surgery); }
+.dept-pharmacy { color: var(--dept-pharmacy); }
+.dept-laboratory { color: var(--dept-laboratory); }
+.dept-radiology { color: var(--dept-radiology); }
+.dept-admin { color: var(--dept-admin); }
+
+/* Background variants */
+.bg-dept-outpatient { background: var(--dept-outpatient); }
+.bg-dept-inpatient { background: var(--dept-inpatient); }
+.bg-dept-emergency { background: var(--dept-emergency); }
+.bg-dept-surgery { background: var(--dept-surgery); }
+.bg-dept-pharmacy { background: var(--dept-pharmacy); }
+.bg-dept-laboratory { background: var(--dept-laboratory); }
+.bg-dept-radiology { background: var(--dept-radiology); }
+.bg-dept-admin { background: var(--dept-admin); }
+
+/* Text utilities */
+.text-primary { color: var(--hms-text-primary); }
+.text-secondary { color: var(--hms-text-secondary); }
+.text-muted { color: var(--hms-text-muted); }
+.text-success { color: var(--hms-success); }
+.text-warning { color: var(--hms-warning); }
+.text-error { color: var(--hms-error); }
+
+/* Background utilities */
+.bg-surface { background: var(--hms-surface); }
+.bg-muted { background: var(--hms-muted); }
+
+/* Shadow utilities */
+.shadow-hms-sm { box-shadow: var(--hms-shadow-sm); }
+.shadow-hms-base { box-shadow: var(--hms-shadow-base); }
+.shadow-hms-md { box-shadow: var(--hms-shadow-md); }
+.shadow-hms-lg { box-shadow: var(--hms-shadow-lg); }
+.shadow-hms-xl { box-shadow: var(--hms-shadow-xl); }
+
+/* ================================
+   RESPONSIVE DESIGN
+   ================================ */
+
+@media (max-width: 768px) {
+  .hms-main-layout {
+    margin: 0;
+  }
+  
+  .hms-content-wrapper {
+    padding: var(--hms-space-4);
+  }
+  
+  .hms-header {
+    padding: 0 var(--hms-space-4);
+  }
+  
+  .hms-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+  }
+  
+  .hms-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+}
+
+/* ================================
+   ANIMATIONS
+   ================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.hms-animate-fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+.hms-animate-slide-in {
+  animation: slideIn 0.3s ease;
+}
+
+/* ================================
+   ACCESSIBILITY
+   ================================ */
+
+.hms-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hms-focus-outline:focus {
+  outline: 2px solid var(--hms-primary);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
