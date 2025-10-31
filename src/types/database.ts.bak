@@ -262,8 +262,8 @@ export interface HospitalAppointment {
   entity_platform_id: string // Hospital reference through hospital_master.entity_platform_id
   pet_platform_id: string
   owner_user_platform_id: string // Simple direct reference to pet owner
-  // CORRECTED: Doctor should reference through employee_entity_id from employee_seat_assignment
-  doctor_employee_entity_id?: string // References employee_seat_assignment.employee_entity_id
+  // CORRECTED: Doctor should reference through employee_entity_id from employee_to_entity_role_assignment
+  doctor_employee_entity_id?: string // References employee_to_entity_role_assignment.employee_entity_id
   appointment_date: string
   appointment_time: string
   appointment_type: string
@@ -299,8 +299,8 @@ export interface HospitalConsultation {
   entity_platform_id: string // Hospital reference through hospital_master.entity_platform_id
   appointment_id?: string
   pet_platform_id: string
-  // CORRECTED: Doctor should reference through employee_entity_id from employee_seat_assignment
-  doctor_employee_entity_id: string // References employee_seat_assignment.employee_entity_id
+  // CORRECTED: Doctor should reference through employee_entity_id from employee_to_entity_role_assignment
+  doctor_employee_entity_id: string // References employee_to_entity_role_assignment.employee_entity_id
   consultation_date: string
   subjective?: string
   objective?: string

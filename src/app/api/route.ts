@@ -6,9 +6,9 @@ export async function GET() {
     version: '1.0.0',
     modules: {
       core: {
-        name: 'Core Module',
-        endpoints: ['/api/core/appointments', '/api/core/consultations', '/api/core/billing'],
-        description: 'Outpatient, Billing, Appointments, Records, Consultation'
+        name: 'Core Module (Outpatient Service)',
+        endpoints: ['http://localhost:6830/api/core/appointments', 'http://localhost:6830/api/core/consultations', 'http://localhost:6830/api/core/billing'],
+        description: 'Outpatient, Billing, Appointments, Records, Consultation - Served by Outpatient Service (port 6830)'
       },
       inpatient: {
         name: 'Inpatient Module',

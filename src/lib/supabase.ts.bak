@@ -39,7 +39,7 @@ export const supabaseAdmin = supabaseClientManager.getClient({
 
 /**
  * Get user's hospital context using the dual role system
- * Hospital staff are identified through employee_seat_assignment
+ * Hospital staff are identified through employee_to_entity_role_assignment
  * Hospital ID is referenced through entity_platform_id in hospital_master table
  */
 export async function getUserHospitalId(userId: string): Promise<string | null> {
@@ -56,9 +56,9 @@ export async function getUserHospitalId(userId: string): Promise<string | null> 
       return null;
     }
 
-    // Get hospital assignment through employee_seat_assignment
+    // Get hospital assignment through employee_to_entity_role_assignment
     const { data: assignment, error: assignmentError } = await supabase
-      .from('employee_seat_assignment')
+      .from('employee_to_entity_role_assignment')
       .select('entity_platform_id')
       .eq('user_platform_id', profile.user_platform_id)
       .eq('is_active', true)
@@ -105,7 +105,7 @@ export async function getUserRoles(userId: string): Promise<UserRoles | null> {
 
     // Get entity-specific employee roles and hospital context
     const { data: entityRoleAssignments, error: entityError } = await supabase
-      .from('employee_seat_assignment')
+      .from('employee_to_entity_role_assignment')
       .select(`
         entity_platform_id,
         platform_roles!inner(role_name)
@@ -149,9 +149,9 @@ export async function getStaffEmployeeId(userId: string): Promise<string | null>
       return null;
     }
 
-    // Get employee_entity_id from employee_seat_assignment
+    // Get employee_entity_id from employee_to_entity_role_assignment
     const { data: assignment, error: assignmentError } = await supabase
-      .from('employee_seat_assignment')
+      .from('employee_to_entity_role_assignment')
       .select('employee_entity_id')
       .eq('user_platform_id', profile.user_platform_id)
       .eq('is_active', true)

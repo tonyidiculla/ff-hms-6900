@@ -18,6 +18,7 @@ interface NavigationItem {
   icon?: React.ReactNode;
   children?: NavigationChild[];
   isSeparator?: boolean;
+  moduleId?: number | string; // Add module ID for subscription filtering (can be number or string)
 }
 
 interface FurfieldSidebarProps {
@@ -49,9 +50,9 @@ const defaultNavigation: NavigationItem[] = [
       </svg>
     ),
     children: [
-      { name: 'Appointments', href: '/core/appointments' },
-      { name: 'Consultations', href: '/core/consultations' },
-      { name: 'Billing', href: '/core/billing' },
+      { name: 'Appointments', href: '/outpatient/appointments' },
+      { name: 'Consultations', href: '/outpatient/consultations' },
+      { name: 'Billing', href: '/outpatient/billing' },
     ],
   },
   {
@@ -145,6 +146,94 @@ const defaultNavigation: NavigationItem[] = [
 
 export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
   const pathname = usePathname();
+  const [subscribedModules, setSubscribedModules] = React.useState<string[]>([]);
+  const [loadingModules, setLoadingModules] = React.useState(true);
+  
+  // Fetch subscribed modules (wait a bit for auth to complete)
+  React.useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        // Wait a bit for auth to complete
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        console.log('[HMS Sidebar] Fetching subscriptions from /api/subscriptions/modules...');
+        const response = await fetch('/api/subscriptions/modules');
+        console.log('[HMS Sidebar] Response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('[HMS Sidebar] Subscription data:', data);
+          const moduleCodes = data.modules?.map((m: any) => m.code) || [];
+          console.log('[HMS Sidebar] Subscribed module codes:', moduleCodes);
+          setSubscribedModules(moduleCodes);
+        } else {
+          const errorData = await response.text();
+          console.error('[HMS Sidebar] Failed to fetch subscriptions:', response.status, errorData);
+          // If auth not ready, show all modules as fallback
+          console.log('[HMS Sidebar] Using fallback - showing all modules');
+        }
+      } catch (error) {
+        console.error('[HMS Sidebar] Error fetching subscriptions:', error);
+      } finally {
+        setLoadingModules(false);
+      }
+    };
+
+    fetchSubscriptions();
+  }, []);
+  
+  // Filter navigation based on subscriptions
+  const getFilteredNavigation = () => {
+    const nav = navigation || defaultNavigation;
+    
+    // If still loading, show only Dashboard
+    if (loadingModules) {
+      return nav.filter(item => item.name === 'Dashboard');
+    }
+    
+    return nav.filter(item => {
+      // Hide separator if no subscribed modules
+      if (item.isSeparator) return subscribedModules.length > 0;
+      
+      // Dashboard is always shown
+      if (item.name === 'Dashboard') {
+        return true;
+      }
+      
+      // Every other module requires subscription - no exceptions
+      // Module codes must match the 'code' field in modules_master table
+      const moduleMap: Record<string, string> = {
+        'Outpatient': 'OPD',
+        'Inpatient': 'INP',
+        'Pharmacy': 'PHA',
+        'Diagnostics': 'DIA',
+        'Operation Theater': 'OTH',
+        'Facility': 'FAC',
+        'Finance': 'FIN',
+        'HR': 'HRM',
+        'Purchasing': 'PUR',
+        'Analytics': 'ANA',
+        'Scheduling': 'SCH',
+        'Rostering': 'RST',
+        'Chat': 'CHT'
+      };
+      
+      const moduleCode = moduleMap[item.name];
+      
+      if (!moduleCode) {
+        console.log('[HMS Sidebar] No module code mapping for:', item.name);
+        return false;
+      }
+      
+      const isSubscribed = subscribedModules.includes(moduleCode);
+      
+      console.log('[HMS Sidebar] Checking', item.name, '- Code:', moduleCode, '- Subscribed:', isSubscribed, '- Available codes:', subscribedModules);
+      
+      return isSubscribed;
+    });
+  };
+  
+  const filteredNavigation = getFilteredNavigation();
   
   // Function to determine which items should be expanded based on current path
   const getExpandedItems = () => {
@@ -198,8 +287,8 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
     setExpandedItems(getExpandedItems());
   }, [pathname]);
 
-  // Use provided navigation or fall back to default
-  const navItems = navigation || defaultNavigation;
+  // Use filtered navigation
+  const navItems = filteredNavigation || defaultNavigation;
 
   const toggleExpanded = (name: string) => {
     setExpandedItems(prev =>
@@ -208,8 +297,8 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
   };
 
   return (
-    <aside className="w-64 bg-white/40 backdrop-blur-md shadow-lg border-r border-white/20">
-      <nav className="p-4 space-y-1">
+    <aside className="w-64 bg-white/40 backdrop-blur-md shadow-lg border-r border-white/20 flex flex-col">
+      <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
         {navItems.map((item, index) => {
           // Handle separator
           if (item.isSeparator) {
@@ -233,7 +322,37 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
                     <div className="flex items-center px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all">
                       {item.icon}
                     </div>
+                  ) : item.href ? (
+                    // Item has both href and children - split into link and toggle button
+                    <div className={cn(
+                      'flex items-center rounded-xl overflow-hidden transition-all',
+                      isActive
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
+                        : 'hover:bg-blue-50 hover:text-blue-700 text-gray-700'
+                    )}>
+                      <Link
+                        href={item.href}
+                        className="flex-1 flex items-center gap-3 px-4 py-3 text-sm font-medium"
+                      >
+                        {item.icon}
+                        {item.name}
+                      </Link>
+                      <button
+                        onClick={() => toggleExpanded(item.name)}
+                        className="px-3 py-3 text-sm font-medium border-l border-white/20"
+                      >
+                        <svg
+                          className={cn('w-4 h-4 transition-transform', isExpanded && 'rotate-90')}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
                   ) : (
+                    // Item has only children, no href - just toggle button
                     <button
                       onClick={() => toggleExpanded(item.name)}
                       className={cn(
@@ -268,10 +387,10 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
                               key={child.href}
                               href={child.href}
                               className={cn(
-                                'block px-4 py-2.5 text-sm transition-all hover:bg-blue-50 hover:text-blue-600',
+                                'block px-4 py-2.5 transition-all',
                                 isChildActive
-                                  ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-medium'
-                                  : 'text-gray-700'
+                                  ? 'text-orange-700 font-semibold text-base'
+                                  : 'text-gray-700 text-sm hover:text-orange-600'
                               )}
                             >
                               {child.name}
@@ -307,10 +426,10 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
                         key={child.href}
                         href={child.href}
                         className={cn(
-                          'block px-4 py-2.5 rounded-lg text-sm transition-all',
+                          'block px-4 py-2.5 rounded-lg transition-all',
                           isChildActive
-                            ? 'bg-blue-100 text-blue-700 font-medium'
-                            : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                            ? 'text-orange-700 font-semibold text-base'
+                            : 'text-gray-600 text-sm hover:text-orange-600'
                         )}
                       >
                         {child.name}
@@ -323,6 +442,24 @@ export const Sidebar: React.FC<FurfieldSidebarProps> = ({ navigation }) => {
           );
         })}
       </nav>
+      
+      {/* Powered by FURFIELD - Fixed at Bottom */}
+      <div className="p-4 border-t border-gray-200 bg-white/50">
+        <div className="flex items-center justify-center gap-3">
+          <Image 
+            src="/Furfield-icon.png" 
+            alt="Furfield Logo" 
+            width={40}
+            height={40}
+            className="rounded opacity-90"
+            style={{ width: 'auto', height: 'auto' }}
+          />
+          <div className="text-center">
+            <p className="text-xs text-gray-500">Powered by</p>
+            <p className="text-sm font-semibold text-blue-600">FURFIELD</p>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 };

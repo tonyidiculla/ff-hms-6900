@@ -32,9 +32,9 @@ export const financeNavigation: NavigationItem[] = [
       </svg>
     ),
     children: [
-      { name: 'Appointments', href: 'http://localhost:6830/core/appointments' },
-      { name: 'Consultations', href: 'http://localhost:6830/core/consultations' },
-      { name: 'Billing', href: 'http://localhost:6830/core/billing' },
+      { name: 'Appointments', href: 'http://localhost:6830/appointments' },
+      { name: 'Consultations', href: 'http://localhost:6830/consultations' },
+      { name: 'Billing', href: 'http://localhost:6830/billing' },
     ],
   },
   {

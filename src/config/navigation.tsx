@@ -13,6 +13,7 @@ interface NavigationItem {
   icon?: React.ReactNode;
   children?: NavigationChild[];
   isSeparator?: boolean;
+  moduleId?: number; // Module ID for subscription filtering
 }
 
 export const hmsNavigation: NavigationItem[] = [
@@ -45,9 +46,11 @@ export const hmsNavigation: NavigationItem[] = [
   },
   {
     name: 'Outpatient',
+    href: '/outpatient',
+    moduleId: 1, // Corresponds to Outpatient module
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2 a2 2 0 012 2" />
       </svg>
     ),
     children: [
@@ -58,9 +61,11 @@ export const hmsNavigation: NavigationItem[] = [
   },
   {
     name: 'Inpatient',
+    href: '/inpatient',
+    moduleId: 2, // Corresponds to Inpatient module
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12h4l3 9 4-18 3 9h4" />
       </svg>
     ),
     children: [
@@ -70,6 +75,8 @@ export const hmsNavigation: NavigationItem[] = [
   },
   {
     name: 'Pharmacy',
+    href: '/pharmacy',
+    moduleId: 4, // Corresponds to Pharmacy module
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -81,6 +88,8 @@ export const hmsNavigation: NavigationItem[] = [
   },
   {
     name: 'Diagnostics',
+    href: '/diagnostics',
+    moduleId: 3, // Corresponds to Diagnostics module
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -92,6 +101,7 @@ export const hmsNavigation: NavigationItem[] = [
   },
   {
     name: 'Operation Theater',
+    href: '/operation-theater',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -106,11 +116,11 @@ export const hmsNavigation: NavigationItem[] = [
     href: '/facility',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     ),
     children: [
-      { name: 'Dashboard', href: '/facility' },
       { name: 'Work Orders', href: '/facility/work-orders' },
       { name: 'Equipment', href: '/facility/equipment' },
       { name: 'Maintenance', href: '/facility/maintenance' },
@@ -126,7 +136,6 @@ export const hmsNavigation: NavigationItem[] = [
       </svg>
     ),
     children: [
-      { name: 'HR Dashboard', href: '/hr' },
       { name: 'Employees', href: '/hr/employees' },
       { name: 'Attendance', href: '/hr/attendance' },
       { name: 'Leave', href: '/hr/leave' },
@@ -144,7 +153,6 @@ export const hmsNavigation: NavigationItem[] = [
       </svg>
     ),
     children: [
-      { name: 'Dashboard', href: '/purchasing' },
       { name: 'Purchase Orders', href: '/purchasing/purchase-orders' },
       { name: 'Suppliers', href: '/purchasing/suppliers' },
       { name: 'Inventory', href: '/purchasing/inventory' },
@@ -154,13 +162,13 @@ export const hmsNavigation: NavigationItem[] = [
   },
   {
     name: 'Finance',
+    href: '/finance',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 8h6M9 12h6m-7 8h8a2 2 0 002-2V6a2 2 0 00-2-2H8a2 2 0 00-2 2v10a2 2 0 002 2zm0 0h8a2 2 0 002-2V6a2 2 0 00-2-2H8a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     ),
     children: [
-      { name: 'Dashboard', href: '/finance' },
       { name: 'Accounts', href: '/finance/accounts' },
       { name: 'Invoicing', href: '/finance/invoicing' },
       { name: 'Reports', href: '/finance/reports' },
@@ -175,7 +183,6 @@ export const hmsNavigation: NavigationItem[] = [
       </svg>
     ),
     children: [
-      { name: 'Dashboard', href: '/analytics' },
       { name: 'Reports', href: '/analytics/reports' },
       { name: 'Performance', href: '/analytics/performance' },
       { name: 'Financial Analytics', href: '/analytics/financial' },

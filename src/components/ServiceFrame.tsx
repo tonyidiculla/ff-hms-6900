@@ -46,7 +46,7 @@ export const ServiceFrame: React.FC<ServiceFrameProps> = ({ url, serviceName }) 
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full flex-1 min-h-0">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
           <div className="text-center">

@@ -54,6 +54,8 @@
   "exclude": [
     "node_modules",
     "backup/**/*",
-    "**/backup/**/*"
+    "**/backup/**/*",
+    "e2e/**/*",
+    "playwright.config.ts"
   ]
 }

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { PageWrapper } from '@/components/layout/PageWrapper';
+import { ContentArea, VStack } from '@/components/layout/PageLayout';
 
 export default function HomePage() {
   const stats = [
@@ -27,14 +27,17 @@ export default function HomePage() {
   ];
 
   return (
-    <PageWrapper color="blue">
-      <div className="space-y-6">
-        <div className="pl-6 pb-2">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Welcome back! Here's what's happening with your hospital today.
-          </p>
-        </div>
+    <div className="min-h-screen h-screen overflow-hidden bg-linear-to-br from-blue-50/70 via-blue-100/80 to-indigo-100/60">
+      <ContentArea className="h-full py-0" maxWidth="7xl">
+        <VStack className="h-full">
+          <div className="px-6 pt-6 pb-2 shrink-0">
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground mt-2">
+              Welcome back! Here's what's happening with your hospital today.
+            </p>
+          </div>
+          
+          <div className="px-6 space-y-6 overflow-y-auto flex-1">
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -122,7 +125,7 @@ export default function HomePage() {
             <div className="space-y-6">
               {upcomingAppointments.map((appointment) => (
                 <div key={appointment.id} className="flex items-center space-x-4">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+                  <div className="shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
                     {appointment.patient.substring(0, 2)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -146,12 +149,12 @@ export default function HomePage() {
         <CardContent>
           <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-6">
             {[
-              { label: 'New Appointment', icon: '📅', href: '/core/appointments' },
-              { label: 'New Pet', icon: '🐾', href: '/core/patients' },
+              { label: 'New Appointment', icon: '📅', href: '/outpatient/appointments' },
+              { label: 'New Pet', icon: '🐾', href: '/outpatient/appointments' }, // Note: patients management might be in appointments
               { label: 'Admissions', icon: '🏥', href: '/inpatient/admissions' },
               { label: 'Pharmacy', icon: '💊', href: '/pharmacy' },
               { label: 'Lab Tests', icon: '🔬', href: '/diagnostics' },
-              { label: 'Billing', icon: '💰', href: '/core/billing' },
+              { label: 'Billing', icon: '💰', href: '/outpatient/billing' },
             ].map((action, index) => (
               <button
                 key={index}
@@ -164,7 +167,9 @@ export default function HomePage() {
           </div>
         </CardContent>
       </Card>
+          </div>
+        </VStack>
+      </ContentArea>
     </div>
-    </PageWrapper>
   );
 }

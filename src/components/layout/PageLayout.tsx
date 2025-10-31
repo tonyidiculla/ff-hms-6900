@@ -9,8 +9,11 @@ import { cn } from '@/lib/utils';
  */
 
 // ============================================================================
-// Main Page Wrapper
+// BACKUP: PageWrapper (Deprecated - Use PageLayout pattern instead)
 // ============================================================================
+
+/*
+// MOVED TO BACKUP - PageWrapper is deprecated in favor of standardized PageLayout
 
 interface PageWrapperProps {
   children: React.ReactNode;
@@ -18,16 +21,11 @@ interface PageWrapperProps {
   className?: string;
 }
 
-/**
- * Basic page wrapper - provides minimal structure with optional color theme
- * Cards sit directly on gradient background
- */
 export const PageWrapper: React.FC<PageWrapperProps> = ({ 
   children, 
   color = 'blue',
   className 
 }) => {
-  // Use subtle pastel colors with soft gradients (reduced saturation)
   const colorClasses = {
     blue: 'bg-gradient-to-br from-blue-50/70 via-blue-100/80 to-indigo-100/60',
     green: 'bg-gradient-to-br from-green-50/70 via-green-100/80 to-cyan-100/60',
@@ -43,6 +41,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({
     </div>
   );
 };
+*/
 
 // ============================================================================
 // Content Area Layout
@@ -79,7 +78,7 @@ export const ContentArea: React.FC<ContentAreaProps> = ({
   return (
     <div className={cn(
       maxWidthClasses[maxWidth],
-      'mx-auto px-4 sm:px-6 lg:px-8 py-8',
+      'mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full overflow-hidden',
       className
     )}>
       {children}
@@ -96,6 +95,7 @@ interface ContentCardProps {
   children: React.ReactNode;
   className?: string;
   headerActions?: React.ReactNode;
+  scrollable?: boolean;
 }
 
 /**
@@ -106,12 +106,13 @@ export const ContentCard: React.FC<ContentCardProps> = ({
   title, 
   children, 
   className = '',
-  headerActions
+  headerActions,
+  scrollable = false
 }) => {
   return (
-    <div className={cn('bg-white shadow-sm rounded-lg border border-gray-200', className)}>
+    <div className={cn('bg-white shadow-sm rounded-lg border border-gray-200', scrollable && 'flex flex-col flex-1', className)}>
       {title && (
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
           {headerActions && (
             <div className="flex items-center space-x-3">
@@ -120,7 +121,7 @@ export const ContentCard: React.FC<ContentCardProps> = ({
           )}
         </div>
       )}
-      <div className="p-6">
+      <div className={cn('p-6', scrollable && 'overflow-y-auto flex-1')}>
         {children}
       </div>
     </div>
@@ -185,7 +186,7 @@ export const VStack: React.FC<SpacingProps> = ({
   };
 
   return (
-    <div className={cn(spacingClasses[size], className)}>
+    <div className={cn(spacingClasses[size], 'h-full flex flex-col', className)}>
       {children}
     </div>
   );
