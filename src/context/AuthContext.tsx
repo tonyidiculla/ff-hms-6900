@@ -7,6 +7,8 @@ interface User {
   name: string;
   email: string;
   role: string;
+  jobTitle?: string | null;
+  privilegeLevel?: number | null;
   entity_platform_id: string | null;
   employee_entity_id: string | null;
   user_platform_id: string | null;
@@ -49,6 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: userData.name || 'User',
             email: userData.email || '',
             role: userData.role || 'user',
+            jobTitle: userData.jobTitle || null,
+            privilegeLevel: userData.privilegeLevel || null,
             entity_platform_id: userData.entity_platform_id || null,
             employee_entity_id: userData.employee_entity_id || null,
             user_platform_id: userData.user_platform_id || null,
@@ -86,6 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(prevUser => ({
           ...prevUser!,
           avatarUrl: userData.avatarUrl || prevUser?.avatarUrl || null,
+          jobTitle: userData.jobTitle || prevUser?.jobTitle || null,
+          privilegeLevel: userData.privilegeLevel || prevUser?.privilegeLevel || null,
           // Update any other fields that might have changed
           name: userData.name || (userData.firstName && userData.lastName ? `${userData.firstName} ${userData.lastName}` : prevUser?.name || 'User'),
           firstName: userData.firstName || userData.first_name || prevUser?.firstName || '',

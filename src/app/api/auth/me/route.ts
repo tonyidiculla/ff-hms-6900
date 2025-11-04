@@ -50,9 +50,26 @@ export async function GET(request: NextRequest) {
 
     // Get user's actual role from platform_roles via user_expertise_assignment
     let userRole = 'User';
+    let privilegeLevel: number | null = null;
+    let jobTitle: string | null = null;
+    
     if (profile?.user_platform_id) {
       console.log('[Auth API] Fetching role for user_platform_id:', profile.user_platform_id);
       
+      // Get job title from employee_seat_assignment
+      const { data: seatAssignment, error: seatError } = await supabase
+        .from('employee_seat_assignment')
+        .select('employee_job_title, platform_role_id, is_active')
+        .eq('user_id', session.user.id)
+        .eq('is_active', true)
+        .single();
+
+      console.log('[Auth API] Seat assignment:', { seatAssignment, seatError });
+
+      if (seatAssignment?.employee_job_title) {
+        jobTitle = seatAssignment.employee_job_title;
+      }
+
       // Get the role assignments from user_expertise_assignment
       const { data: roleAssignments, error: roleError } = await supabase
         .from('user_expertise_assignment')
@@ -97,6 +114,9 @@ export async function GET(request: NextRequest) {
           const primaryRole = roles[0];
           console.log('[Auth API] Primary role selected:', primaryRole);
           
+          // Store privilege level
+          privilegeLevel = primaryRole.privilege_level;
+          
           // Use display_name if available, otherwise format role_name
           if (primaryRole.display_name) {
             userRole = primaryRole.display_name;
@@ -107,7 +127,7 @@ export async function GET(request: NextRequest) {
               .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
               .join(' ');
           }
-          console.log('[Auth API] Final userRole:', userRole);
+          console.log('[Auth API] Final userRole:', userRole, 'Privilege Level:', privilegeLevel);
         }
       } else {
         console.log('[Auth API] No active role assignments found for user');
@@ -156,6 +176,8 @@ export async function GET(request: NextRequest) {
       lastName: lastName,
       email: email,
       role: userRole,
+      jobTitle: jobTitle,
+      privilegeLevel: privilegeLevel,
       entity_platform_id: claims.entityPlatformId || profile?.entity_platform_id || null,
       employee_entity_id: profile?.employee_entity_id || null,
       user_platform_id: profile?.user_platform_id || claims.userPlatformId || null,

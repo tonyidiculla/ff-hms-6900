@@ -137,8 +137,7 @@ export const hmsNavigation: NavigationItem[] = [
     ),
     children: [
       { name: 'Employees', href: '/hr/employees' },
-      { name: 'Attendance', href: '/hr/attendance' },
-      { name: 'Leave', href: '/hr/leave' },
+      { name: 'Attendance & Leave', href: '/hr/attendance-leave' },
       { name: 'Performance', href: '/hr/performance' },
       { name: 'Training', href: '/hr/training' },
       { name: 'Rostering', href: '/rostering' },

@@ -126,8 +126,7 @@ const defaultNavigation: NavigationItem[] = [
     children: [
       { name: 'Dashboard', href: 'http://localhost:6860' },
       { name: 'Employees', href: 'http://localhost:6860/employees' },
-      { name: 'Attendance', href: 'http://localhost:6860/attendance' },
-      { name: 'Leave Management', href: 'http://localhost:6860/leave' },
+      { name: 'Attendance & Leave', href: 'http://localhost:6860/attendance-leave' },
       { name: 'Performance', href: 'http://localhost:6860/performance' },
       { name: 'Training', href: 'http://localhost:6860/training' },
       { name: 'Rostering', href: '/rostering' },

@@ -29,7 +29,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen h-screen overflow-hidden bg-linear-to-br from-blue-50/70 via-blue-100/80 to-indigo-100/60">
       <ContentArea className="h-full py-0" maxWidth="7xl">
-        <VStack className="h-full">
+        <VStack>
           <div className="px-6 pt-6 pb-2 shrink-0">
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground mt-2">
@@ -37,7 +37,7 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="px-6 space-y-6 overflow-y-auto flex-1">
+          <div className="">
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

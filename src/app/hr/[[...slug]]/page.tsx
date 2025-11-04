@@ -14,9 +14,11 @@ export default function HRPage() {
   } else if (pathname === '/hr/employees') {
     hrmsPath = '/employees';
   } else if (pathname === '/hr/attendance') {
-    hrmsPath = '/attendance';
+    hrmsPath = '/attendance-leave?tab=attendance'; // Redirect to combined interface
   } else if (pathname === '/hr/leave') {
-    hrmsPath = '/leave';
+    hrmsPath = '/attendance-leave?tab=leave'; // Redirect to combined interface
+  } else if (pathname === '/hr/attendance-leave') {
+    hrmsPath = '/attendance-leave';
   } else if (pathname === '/hr/performance') {
     hrmsPath = '/performance';
   } else if (pathname === '/hr/training') {

@@ -7,6 +7,23 @@ import { useAuth } from '@/context/AuthContext';
 import { uploadFile } from '@/lib/storage-service';
 import { supabase } from '@/lib/supabase-client';
 
+// Helper function to get privilege level name
+const getPrivilegeLevelName = (level: number): string => {
+  switch (level) {
+    case 1: return 'Platform Admin';
+    case 5: return 'Org Owner';
+    case 10: return 'Org Admin';
+    case 20: return 'Entity Admin';
+    case 25: return 'HR Manager';
+    case 30: return 'Dept Manager';
+    case 40: return 'Team Lead';
+    case 50: return 'Employee';
+    case 60: return 'Contractor';
+    case 100: return 'Guest';
+    default: return `Level ${level}`;
+  }
+};
+
 export interface FurfieldHeaderProps {
   title?: string;
   homeRoute?: string;
@@ -132,17 +149,6 @@ export const FurfieldHeader: React.FC<FurfieldHeaderProps> = ({
       <div className="flex items-center justify-between px-6 py-4">
         {/* Left Section - Entity Branding */}
         <div className="flex items-center gap-4">
-          {/* Home Icon */}
-          <button
-            onClick={() => router.push(homeRoute)}
-            className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Go to Home"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-          </button>
-
           {/* Entity Logo and Name */}
           <div className="flex items-center gap-3">
             {entityLogo ? (
@@ -215,7 +221,14 @@ export const FurfieldHeader: React.FC<FurfieldHeaderProps> = ({
           {/* User Info */}
           <div className="text-right hidden sm:block">
             <div className="text-xs font-medium text-gray-900">{displayName}</div>
-            <div className="text-[10px] text-gray-500">{user?.role || 'HMS User'}</div>
+            <div className="text-[10px] text-gray-500">
+              {user?.jobTitle || user?.role || 'HMS User'}
+            </div>
+            {user?.privilegeLevel && (
+              <div className="text-[10px] text-gray-400">
+                {getPrivilegeLevelName(user.privilegeLevel)}
+              </div>
+            )}
           </div>
           
           {/* Avatar */}
