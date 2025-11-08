@@ -1,175 +1,353 @@
 'use client';
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { ContentArea, VStack } from '@/components/layout/PageLayout';
+import React, { useEffect, useState } from 'react';
+
+interface MetricCard {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
+  module: string;
+}
 
 export default function HomePage() {
-  const stats = [
-    { label: 'Total Appointments', value: '24', change: '+12%', trend: 'up' },
-    { label: 'Active Pets', value: '156', change: '+8%', trend: 'up' },
-    { label: 'Pending Bills', value: '8', change: '-3%', trend: 'down' },
-    { label: 'Available Beds', value: '12', change: '0%', trend: 'neutral' },
-  ];
+  const [metrics, setMetrics] = useState<MetricCard[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const recentActivities = [
-    { id: 1, type: 'Appointment', patient: 'Max (Dog)', time: '10 mins ago', status: 'completed' },
-    { id: 2, type: 'Admission', patient: 'Luna (Cat)', time: '25 mins ago', status: 'active' },
-    { id: 3, type: 'Surgery', patient: 'Charlie (Dog)', time: '1 hour ago', status: 'scheduled' },
-    { id: 4, type: 'Lab Test', patient: 'Bella (Cat)', time: '2 hours ago', status: 'pending' },
-  ];
+  useEffect(() => {
+    // Simulate fetching metrics from various microservices
+    // In production, these would be actual API calls
+    const fetchMetrics = async () => {
+      const allMetrics: MetricCard[] = [
+        // Chat Module
+        {
+          title: 'Active Conversations',
+          value: '24',
+          subtitle: '+12% from last week',
+          module: 'Chat',
+          color: 'text-purple-600',
+          bgColor: 'bg-purple-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-4A8.96 8.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          ),
+        },
+        // Outpatient Module
+        {
+          title: 'Today\'s Appointments',
+          value: '48',
+          subtitle: '12 pending, 36 completed',
+          module: 'Outpatient',
+          color: 'text-blue-600',
+          bgColor: 'bg-blue-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Consultations',
+          value: '32',
+          subtitle: '8 in progress',
+          module: 'Outpatient',
+          color: 'text-cyan-600',
+          bgColor: 'bg-cyan-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          ),
+        },
+        // Inpatient Module
+        {
+          title: 'Occupied Beds',
+          value: '45/60',
+          subtitle: '15 beds available',
+          module: 'Inpatient',
+          color: 'text-green-600',
+          bgColor: 'bg-green-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          ),
+        },
+        {
+          title: 'ICU Patients',
+          value: '8',
+          subtitle: '2 critical, 6 stable',
+          module: 'Inpatient',
+          color: 'text-red-600',
+          bgColor: 'bg-red-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ),
+        },
+        // Operation Theater
+        {
+          title: 'Scheduled Surgeries',
+          value: '6',
+          subtitle: '3 completed today',
+          module: 'Operation Theater',
+          color: 'text-orange-600',
+          bgColor: 'bg-orange-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          ),
+        },
+        // Pharmacy
+        {
+          title: 'Pharmacy Orders',
+          value: '89',
+          subtitle: '12 pending fulfillment',
+          module: 'Pharmacy',
+          color: 'text-teal-600',
+          bgColor: 'bg-teal-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Low Stock Items',
+          value: '14',
+          subtitle: 'Requires reordering',
+          module: 'Pharmacy',
+          color: 'text-yellow-600',
+          bgColor: 'bg-yellow-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ),
+        },
+        // Diagnostics
+        {
+          title: 'Lab Tests',
+          value: '156',
+          subtitle: '42 pending results',
+          module: 'Diagnostics',
+          color: 'text-indigo-600',
+          bgColor: 'bg-indigo-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          ),
+        },
+        // Facility
+        {
+          title: 'Room Occupancy',
+          value: '78%',
+          subtitle: '18 rooms available',
+          module: 'Facility',
+          color: 'text-pink-600',
+          bgColor: 'bg-pink-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          ),
+        },
+        // Purchasing
+        {
+          title: 'Purchase Orders',
+          value: '23',
+          subtitle: '8 pending approval',
+          module: 'Purchasing',
+          color: 'text-lime-600',
+          bgColor: 'bg-lime-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          ),
+        },
+        // Finance
+        {
+          title: 'Revenue Today',
+          value: '$12,450',
+          subtitle: '+8% vs yesterday',
+          module: 'Finance',
+          color: 'text-emerald-600',
+          bgColor: 'bg-emerald-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Pending Payments',
+          value: '$8,920',
+          subtitle: '34 invoices',
+          module: 'Finance',
+          color: 'text-rose-600',
+          bgColor: 'bg-rose-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          ),
+        },
+        // HRMS
+        {
+          title: 'Total Staff',
+          value: '284',
+          subtitle: '12 on leave today',
+          module: 'HRMS',
+          color: 'text-violet-600',
+          bgColor: 'bg-violet-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          ),
+        },
+        {
+          title: 'Shift Coverage',
+          value: '96%',
+          subtitle: '2 shifts understaffed',
+          module: 'HRMS',
+          color: 'text-amber-600',
+          bgColor: 'bg-amber-50',
+          icon: (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ),
+        },
+      ];
 
-  const upcomingAppointments = [
-    { id: 1, patient: 'Rocky', species: 'Dog', time: '2:00 PM', doctor: 'Dr. Smith' },
-    { id: 2, patient: 'Whiskers', species: 'Cat', time: '2:30 PM', doctor: 'Dr. Johnson' },
-    { id: 3, patient: 'Buddy', species: 'Dog', time: '3:00 PM', doctor: 'Dr. Smith' },
-  ];
+      setMetrics(allMetrics);
+      setLoading(false);
+    };
+
+    fetchMetrics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-indigo-50 to-cyan-50">
+        <div className="text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-t-2 border-cyan-500 mx-auto mb-4"></div>
+            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-2 border-blue-400 opacity-20 mx-auto"></div>
+          </div>
+          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen h-screen overflow-hidden bg-linear-to-br from-blue-50/70 via-blue-100/80 to-indigo-100/60">
-      <ContentArea className="h-full py-0" maxWidth="7xl">
-        <VStack>
-          <div className="px-6 pt-6 pb-2 shrink-0">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
-              Welcome back! Here's what's happening with your hospital today.
-            </p>
-          </div>
-          
-          <div className="">
-
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.label}</CardTitle>
-              <svg
-                className={`h-4 w-4 ${
-                  stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : 'text-gray-400'
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                {stat.trend === 'up' ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                ) : stat.trend === 'down' ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14" />
-                )}
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-cyan-50 p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header with Glassmorphic Background */}
+        <div className="mb-6 md:mb-8 bg-white/40 backdrop-blur-lg rounded-2xl p-6 md:p-8 shadow-xl border border-white/20">
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-12 h-12 bg-linear-to-r from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                <span className={stat.trend === 'up' ? 'text-green-600' : stat.trend === 'down' ? 'text-red-600' : ''}>
-                  {stat.change}
-                </span>{' '}
-                from last week
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        {/* Recent Activities */}
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
-            <CardDescription>Latest updates from your hospital</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-2 h-2 rounded-full bg-primary"></div>
-                    <div>
-                      <p className="text-sm font-medium">{activity.type}</p>
-                      <p className="text-xs text-muted-foreground">{activity.patient}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge
-                      variant={
-                        activity.status === 'completed'
-                          ? 'success'
-                          : activity.status === 'active'
-                          ? 'info'
-                          : activity.status === 'scheduled'
-                          ? 'warning'
-                          : 'default'
-                      }
-                    >
-                      {activity.status}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{activity.time}</span>
-                  </div>
-                </div>
-              ))}
             </div>
-          </CardContent>
-        </Card>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
+              FURFIELD Hospital Management System
+            </h1>
+          </div>
+          <p className="text-base md:text-lg text-gray-600 ml-16">
+            Real-time overview of all hospital operations
+          </p>
+        </div>
 
-        {/* Upcoming Appointments */}
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Upcoming Appointments</CardTitle>
-            <CardDescription>Today's schedule</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {upcomingAppointments.map((appointment) => (
-                <div key={appointment.id} className="flex items-center space-x-4">
-                  <div className="shrink-0 w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                    {appointment.patient.substring(0, 2)}
+        {/* Metrics Grid with Enhanced Glassmorphism */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {metrics.map((metric, index) => (
+            <div
+              key={index}
+              className="group relative bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-5 md:p-6 border border-white/30 hover:border-cyan-300/50 overflow-hidden"
+            >
+              {/* Gradient overlay on hover */}
+              <div className="absolute inset-0 bg-linear-to-br from-cyan-500/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`p-3 rounded-xl ${metric.bgColor} backdrop-blur-sm shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                    <div className={metric.color}>{metric.icon}</div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{appointment.patient}</p>
-                    <p className="text-xs text-muted-foreground">{appointment.species} • {appointment.doctor}</p>
-                  </div>
-                  <div className="text-sm font-medium text-primary">{appointment.time}</div>
+                  <span className="text-xs font-semibold text-gray-600 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50 shadow-sm">
+                    {metric.module}
+                  </span>
                 </div>
-              ))}
+                <h3 className="text-sm font-semibold text-gray-700 mb-2 group-hover:text-gray-900 transition-colors">
+                  {metric.title}
+                </h3>
+                <p className="text-3xl md:text-4xl font-bold bg-linear-to-r from-cyan-600 to-blue-700 bg-clip-text text-transparent mb-2 group-hover:from-cyan-500 group-hover:to-blue-600 transition-all">
+                  {metric.value}
+                </p>
+                <p className="text-xs text-gray-500 font-medium">{metric.subtitle}</p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          ))}
+        </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Commonly used features for quick access</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-6">
-            {[
-              { label: 'New Appointment', icon: '📅', href: '/outpatient/appointments' },
-              { label: 'New Pet', icon: '🐾', href: '/outpatient/appointments' }, // Note: patients management might be in appointments
-              { label: 'Admissions', icon: '🏥', href: '/inpatient/admissions' },
-              { label: 'Pharmacy', icon: '💊', href: '/pharmacy' },
-              { label: 'Lab Tests', icon: '🔬', href: '/diagnostics' },
-              { label: 'Billing', icon: '💰', href: '/outpatient/billing' },
-            ].map((action, index) => (
-              <button
-                key={index}
-                className="flex flex-col items-center justify-center p-6 rounded-2xl bg-white/30 backdrop-blur-xl ring-1 ring-white/10 hover:bg-white/40 hover:ring-primary/30 hover:scale-105 transition-all duration-300 group"
-              >
-                <span className="text-4xl mb-3 group-hover:scale-110 transition-transform">{action.icon}</span>
-                <span className="text-sm font-medium text-center">{action.label}</span>
-              </button>
-            ))}
+        {/* System Status with Enhanced Design */}
+        <div className="mt-6 md:mt-8 bg-white/60 backdrop-blur-xl rounded-2xl shadow-lg p-5 md:p-6 border border-white/30">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-linear-to-r from-green-400 to-emerald-500 rounded-lg flex items-center justify-center shadow-md">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">System Status</h2>
           </div>
-        </CardContent>
-      </Card>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="flex items-center space-x-4 bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/30 hover:border-green-300/50 transition-all duration-300 hover:shadow-md">
+              <div className="relative">
+                <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-lg"></div>
+                <div className="absolute inset-0 w-4 h-4 bg-green-400 rounded-full animate-ping opacity-30"></div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">All Systems Operational</p>
+                <p className="text-xs text-gray-500">Last checked: Just now</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/30 hover:border-cyan-300/50 transition-all duration-300 hover:shadow-md">
+              <div className="w-4 h-4 bg-linear-to-r from-cyan-500 to-blue-600 rounded-full shadow-lg"></div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">12 Microservices Active</p>
+                <p className="text-xs text-gray-500">All responding normally</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 bg-white/50 backdrop-blur-sm rounded-xl p-4 border border-white/30 hover:border-purple-300/50 transition-all duration-300 hover:shadow-md">
+              <div className="w-4 h-4 bg-purple-500 rounded-full shadow-lg"></div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Database: Healthy</p>
+                <p className="text-xs text-gray-500">Response time: 12ms</p>
+              </div>
+            </div>
           </div>
-        </VStack>
-      </ContentArea>
+        </div>
+
+        {/* Footer Badge */}
+        <div className="mt-6 text-center">
+          <div className="inline-flex items-center gap-2 bg-white/40 backdrop-blur-lg rounded-full px-6 py-3 shadow-lg border border-white/30">
+            <div className="w-2 h-2 bg-linear-to-r from-cyan-500 to-blue-600 rounded-full animate-pulse"></div>
+            <span className="text-sm font-semibold bg-linear-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              Powered by FURFIELD
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

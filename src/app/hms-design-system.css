@@ -11,20 +11,20 @@
    ================================ */
 
 :root {
-  /* Core Brand Colors */
-  --hms-primary: #2563eb;
-  --hms-primary-dark: #1d4ed8;
-  --hms-primary-light: #dbeafe;
+  /* Core Brand Colors - Furfield Sidebar Theme */
+  --hms-primary: #06b6d4; /* cyan-500 */
+  --hms-primary-dark: #0891b2; /* cyan-600 */
+  --hms-primary-light: #cffafe; /* cyan-100 */
   --hms-primary-foreground: #ffffff;
   
-  --hms-secondary: #64748b;
-  --hms-secondary-dark: #475569;
-  --hms-secondary-light: #f1f5f9;
+  --hms-secondary: #2563eb; /* blue-600 */
+  --hms-secondary-dark: #1d4ed8; /* blue-700 */
+  --hms-secondary-light: #dbeafe; /* blue-100 */
   --hms-secondary-foreground: #ffffff;
   
-  --hms-accent: #059669;
-  --hms-accent-light: #d1fae5;
-  --hms-accent-dark: #047857;
+  --hms-accent: #ea580c; /* orange-600 - accent from sidebar */
+  --hms-accent-light: #fed7aa; /* orange-200 */
+  --hms-accent-dark: #c2410c; /* orange-700 */
   
   /* Status Colors */
   --hms-success: #10b981;
@@ -57,11 +57,15 @@
   --dept-radiology: #6366f1;
   --dept-admin: #64748b;
   
-  /* Background & Surface */
+  /* Background & Surface - Frosted Glass Effect */
   --hms-background: #ffffff;
-  --hms-surface: #f8fafc;
-  --hms-muted: #f1f5f9;
+  --hms-surface: #f0f9ff; /* blue-50 */
+  --hms-muted: #e0f2fe; /* blue-100 */
   --hms-border: #e2e8f0;
+  
+  /* Glassmorphism */
+  --hms-glass-bg: rgba(255, 255, 255, 0.4);
+  --hms-glass-border: rgba(255, 255, 255, 0.2);
   
   /* Text Colors */
   --hms-text-primary: #0f172a;
@@ -201,22 +205,27 @@ body {
    ================================ */
 
 .hms-card {
-  background: var(--hms-background);
-  border: 1px solid var(--hms-border);
-  border-radius: var(--hms-radius-lg);
-  box-shadow: var(--hms-shadow-sm);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--hms-radius-xl);
+  box-shadow: var(--hms-shadow-lg);
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .hms-card:hover {
-  box-shadow: var(--hms-shadow-md);
+  box-shadow: var(--hms-shadow-xl);
+  border-color: #a5f3fc; /* cyan-200 */
+  transform: translateY(-2px);
 }
 
 .hms-card-header {
   padding: var(--hms-space-6);
-  border-bottom: 1px solid var(--hms-border);
-  background: var(--hms-background);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
 }
 
 .hms-card-content {
@@ -262,13 +271,15 @@ body {
 }
 
 .hms-btn-primary {
-  background: var(--hms-primary);
+  background: linear-gradient(to right, #06b6d4, #2563eb); /* cyan-500 to blue-600 */
   color: var(--hms-primary-foreground);
+  box-shadow: var(--hms-shadow-md);
 }
 
 .hms-btn-primary:hover:not(:disabled) {
-  background: var(--hms-primary-dark);
-  box-shadow: var(--hms-shadow-md);
+  background: linear-gradient(to right, #0891b2, #1d4ed8); /* cyan-600 to blue-700 */
+  box-shadow: var(--hms-shadow-lg);
+  transform: translateY(-1px);
 }
 
 .hms-btn-secondary {
@@ -278,8 +289,9 @@ body {
 }
 
 .hms-btn-secondary:hover:not(:disabled) {
-  background: var(--hms-muted);
-  border-color: var(--hms-secondary);
+  background: #dbeafe; /* blue-100 */
+  color: #1d4ed8; /* blue-700 */
+  border-color: #60a5fa; /* blue-400 */
 }
 
 .hms-btn-success {

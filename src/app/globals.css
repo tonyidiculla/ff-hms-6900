@@ -8,20 +8,20 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 198 56% 24%;
+    --primary: 188 94% 43%; /* cyan-500 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
+    --secondary: 217 91% 60%; /* blue-500 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 206 100% 97%; /* blue-50 */
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 20 96% 48%; /* orange-600 */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 198 56% 24%;
-    --radius: 0.5rem;
+    --ring: 188 94% 43%;
+    --radius: 0.75rem;
   }
 }
 
@@ -39,5 +39,24 @@
   h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     color: rgb(17 24 39);
+  }
+}
+
+@layer components {
+  /* HRMS Component Styles for Migrated UI */
+  .hrms-btn {
+    @apply inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .hrms-btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+
+  .hrms-btn-secondary {
+    @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-blue-500;
+  }
+
+  .hrms-input {
+    @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
   }
 }

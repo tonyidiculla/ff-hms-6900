@@ -6,6 +6,9 @@
 // Base API configuration
 const API_BASE_URL = typeof window !== 'undefined' ? window.location.origin : '';
 
+// Microservice API endpoints
+const OUTPATIENT_API_BASE = process.env.NEXT_PUBLIC_OUTPATIENT_API_URL || 'http://localhost:6830';
+
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
@@ -337,6 +340,86 @@ export class SubscriptionApi {
   }
 }
 
+/**
+ * Outpatient API Service
+ * Routes all outpatient operations to ff-outp-6830 microservice
+ */
+export class OutpatientApi {
+  private static baseUrl = OUTPATIENT_API_BASE;
+
+  /**
+   * Get appointments
+   */
+  static async getAppointments(params?: {
+    hospital_id?: string;
+    status?: string;
+    limit?: string;
+  }) {
+    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return ApiClient.request(`${this.baseUrl}/api/core/appointments${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Create appointment
+   */
+  static async createAppointment(appointmentData: any) {
+    return ApiClient.request(`${this.baseUrl}/api/core/appointments`, {
+      method: 'POST',
+      body: appointmentData,
+    });
+  }
+
+  /**
+   * Get billing records
+   */
+  static async getBillingRecords(params?: {
+    hospital_id?: string;
+    status?: string;
+    limit?: string;
+  }) {
+    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return ApiClient.request(`${this.baseUrl}/api/core/billing${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Create billing record
+   */
+  static async createBillingRecord(billingData: any) {
+    return ApiClient.request(`${this.baseUrl}/api/core/billing`, {
+      method: 'POST',
+      body: billingData,
+    });
+  }
+
+  /**
+   * Get consultations/SOAP notes
+   */
+  static async getConsultations(params?: {
+    hospital_id?: string;
+    pet_id?: string;
+    limit?: string;
+  }) {
+    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return ApiClient.request(`${this.baseUrl}/api/core/consultations${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Create consultation/SOAP note
+   */
+  static async createConsultation(consultationData: any) {
+    return ApiClient.request(`${this.baseUrl}/api/core/consultations`, {
+      method: 'POST',
+      body: consultationData,
+    });
+  }
+}
+
 // Export unified API client and services
 export default {
   ApiClient,
@@ -344,4 +427,5 @@ export default {
   OrganizationApi,
   EntityApi,
   SubscriptionApi,
+  OutpatientApi,
 };
