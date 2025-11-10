@@ -1,22 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 const HRMS_BASE_URL = process.env.NEXT_PUBLIC_HRMS_URL || 'http://localhost:6860';
 
 /**
  * Proxy endpoint for HRMS leave requests API
- * Forwards all requests to HRMS service
+ * Forwards all requests to HRMS service with authentication
  */
 export async function GET(request: NextRequest) {
   try {
+    const cookieStore = await cookies();
     const { searchParams } = new URL(request.url);
+    
+    // Add entity_id if not present
+    if (!searchParams.has('entity_id')) {
+      searchParams.set('entity_id', 'E00000001');
+    }
+    
     const query = searchParams.toString();
     const url = `${HRMS_BASE_URL}/api/leave${query ? `?${query}` : ''}`;
+
+    // Forward cookies for authentication
+    const cookieHeader = cookieStore.getAll()
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
 
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Cookie': cookieHeader,
       },
+      credentials: 'include',
     });
 
     const data = await response.json();
@@ -33,15 +48,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const cookieStore = await cookies();
     const body = await request.json();
     const url = `${HRMS_BASE_URL}/api/leave`;
+
+    const cookieHeader = cookieStore.getAll()
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Cookie': cookieHeader,
       },
       body: JSON.stringify(body),
+      credentials: 'include',
     });
 
     const data = await response.json();
@@ -58,15 +80,22 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const cookieStore = await cookies();
     const body = await request.json();
     const url = `${HRMS_BASE_URL}/api/leave`;
+
+    const cookieHeader = cookieStore.getAll()
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
 
     const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Cookie': cookieHeader,
       },
       body: JSON.stringify(body),
+      credentials: 'include',
     });
 
     const data = await response.json();
@@ -83,15 +112,22 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const cookieStore = await cookies();
     const { searchParams } = new URL(request.url);
     const query = searchParams.toString();
     const url = `${HRMS_BASE_URL}/api/leave${query ? `?${query}` : ''}`;
+
+    const cookieHeader = cookieStore.getAll()
+      .map(cookie => `${cookie.name}=${cookie.value}`)
+      .join('; ');
 
     const response = await fetch(url, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        'Cookie': cookieHeader,
       },
+      credentials: 'include',
     });
 
     const data = await response.json();
