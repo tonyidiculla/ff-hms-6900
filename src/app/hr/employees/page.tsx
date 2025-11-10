@@ -13,7 +13,268 @@ import { Select } from '@/components/ui/Select';
 import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { hrApiClient } from '@/lib/api/hr-client';
 import { useLocationCurrency } from '@/hooks/useLocationCurrency';
-import { User, Mail, Phone, Building2, Edit2, Trash2, X, Users, CheckCircle, Calendar, Building } from 'lucide-react';
+import { User, Mail, Phone, Building2, Edit2, Trash2, X, Users, CheckCircle, Calendar, Building, Clock, Download } from 'lucide-react';
+
+// Attendance Records Tab Component
+function AttendanceRecordsTab() {
+  const [attendanceRecords, setAttendanceRecords] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [employees, setEmployees] = React.useState<any[]>([]);
+  
+  // Filters
+  const [selectedEmployee, setSelectedEmployee] = React.useState('all');
+  const [startDate, setStartDate] = React.useState('');
+  const [endDate, setEndDate] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState('all');
+
+  // Set default date range (last 30 days)
+  React.useEffect(() => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    
+    setEndDate(today.toISOString().split('T')[0]);
+    setStartDate(thirtyDaysAgo.toISOString().split('T')[0]);
+  }, []);
+
+  // Fetch employees for filter
+  React.useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  // Fetch attendance records when filters change
+  React.useEffect(() => {
+    if (startDate && endDate) {
+      fetchAttendanceRecords();
+    }
+  }, [selectedEmployee, startDate, endDate, statusFilter]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await hrApiClient.fetchEmployees();
+      if (response.data) {
+        setEmployees(response.data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching employees:', err);
+    }
+  };
+
+  const fetchAttendanceRecords = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const params = new URLSearchParams();
+      if (selectedEmployee !== 'all') params.append('employee_id', selectedEmployee);
+      if (startDate) params.append('start_date', startDate);
+      if (endDate) params.append('end_date', endDate);
+      if (statusFilter !== 'all') params.append('status', statusFilter);
+
+      const response = await fetch(`/api/hr/attendance/records?${params.toString()}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setAttendanceRecords(data.data || []);
+      } else {
+        setError(data.error || 'Failed to fetch attendance records');
+      }
+    } catch (err: any) {
+      console.error('Error fetching attendance records:', err);
+      setError(err.message || 'Failed to fetch attendance records');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'present':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'absent':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'late':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'half_day':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'leave':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      default:
+        return 'bg-slate-100 text-slate-800 border-slate-200';
+    }
+  };
+
+  const formatTime = (time: string | null) => {
+    if (!time) return '-';
+    return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  return (
+    <>
+      <Card className="border-2">
+        <CardContent className="py-4 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <select
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+              className="px-3 py-2 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Employees</option>
+              {employees.map((emp) => (
+                <option key={emp.employee_entity_id} value={emp.employee_entity_id}>
+                  {emp.first_name} {emp.last_name}
+                </option>
+              ))}
+            </select>
+
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              placeholder="Start Date"
+            />
+
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="End Date"
+            />
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Status</option>
+              <option value="present">Present</option>
+              <option value="absent">Absent</option>
+              <option value="late">Late</option>
+              <option value="half_day">Half Day</option>
+              <option value="leave">Leave</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-2">
+        <CardHeader className="border-b-2 pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Attendance Records
+              </CardTitle>
+              <p className="text-sm text-slate-500 mt-1">
+                {attendanceRecords.length} records found
+              </p>
+            </div>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-sm text-slate-500">Loading attendance records...</p>
+            </div>
+          ) : error ? (
+            <div className="p-8 text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={fetchAttendanceRecords} variant="primary">
+                Retry
+              </Button>
+            </div>
+          ) : attendanceRecords.length === 0 ? (
+            <div className="p-8 text-center text-slate-500">
+              <Calendar className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+              <p>No attendance records found</p>
+              <p className="text-sm mt-1">Try adjusting your filters</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="uppercase text-xs">Date</TableHead>
+                  <TableHead className="uppercase text-xs">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <span>Employee</span>
+                    </div>
+                  </TableHead>
+                  <TableHead className="uppercase text-xs">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span>Check In</span>
+                    </div>
+                  </TableHead>
+                  <TableHead className="uppercase text-xs">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span>Check Out</span>
+                    </div>
+                  </TableHead>
+                  <TableHead className="uppercase text-xs">Hours</TableHead>
+                  <TableHead className="uppercase text-xs">Status</TableHead>
+                  <TableHead className="uppercase text-xs">Notes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {attendanceRecords.map((record) => (
+                  <TableRow key={record.attendance_record_id} className="hover:bg-slate-50">
+                    <TableCell className="font-medium">
+                      {formatDate(record.attendance_date)}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-slate-800">
+                          {record.employee_name}
+                        </p>
+                        <p className="text-sm text-slate-500">
+                          {record.position_name || '-'}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{formatTime(record.check_in_time)}</TableCell>
+                    <TableCell>{formatTime(record.check_out_time)}</TableCell>
+                    <TableCell>
+                      {record.work_hours ? `${record.work_hours.toFixed(1)}h` : '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusBadgeClass(record.status)}>
+                        {record.status.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-slate-600 max-w-xs truncate">
+                      {record.notes || '-'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </>
+  );
+}
 
 export default function EmployeesPage() {
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -1089,158 +1350,7 @@ export default function EmployeesPage() {
         )}
 
         {activeTab === 'records' && (
-          <>
-            <Card className="border-2">
-              <CardContent className="py-3 px-4">
-                <div className="flex gap-3 items-center">
-                  <Input
-                    type="text"
-                    placeholder="Search employees by name, email, or phone..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={fetchEmployees} variant="primary">
-                    Search
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2">
-              <CardHeader className="border-b-2 pb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Employees</CardTitle>
-                    <p className="text-sm text-slate-500 mt-1">{employees.length} total employees</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline">Export</Button>
-                    <Button variant="primary" onClick={() => handleOpenEmployeeModal()}>Add Employee</Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                {loading ? (
-                  <div className="p-8 text-center">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p className="mt-2 text-sm text-slate-500">Loading employees...</p>
-                  </div>
-                ) : error ? (
-                  <div className="p-8 text-center">
-                    <p className="text-red-600 mb-4">{error}</p>
-                    <Button onClick={fetchEmployees} variant="primary">Retry</Button>
-                  </div>
-                ) : employees.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500">
-                    <p>No employees found</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="uppercase text-xs">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            <span>Employee</span>
-                          </div>
-                        </TableHead>
-                        <TableHead className="uppercase text-xs">
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            <span>Contact</span>
-                          </div>
-                        </TableHead>
-                        <TableHead className="uppercase text-xs">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4" />
-                            <span>Role</span>
-                          </div>
-                        </TableHead>
-                        <TableHead className="uppercase text-xs">Status</TableHead>
-                        <TableHead className="uppercase text-xs">Hire Date</TableHead>
-                        <TableHead className="uppercase text-xs">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {employees.map((employee) => (
-                        <TableRow key={employee.id || employee.employee_id} className="hover:bg-slate-50">
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              {employee.avatar_url ? (
-                                <Image
-                                  src={employee.avatar_url}
-                                  alt={`${employee.first_name} ${employee.last_name}`}
-                                  width={40}
-                                  height={40}
-                                  className="w-10 h-10 rounded-full object-cover shrink-0"
-                                  onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold shrink-0">
-                                  {getInitials(employee.first_name, employee.last_name)}
-                                </div>
-                              )}
-                              <div>
-                                <p className="font-medium text-slate-800">
-                                  {employee.first_name} {employee.last_name}
-                                </p>
-                                <p className="text-sm text-slate-500">{employee.employee_id}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="text-sm text-slate-800">{employee.email}</p>
-                              <p className="text-sm text-slate-500">{employee.phone}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="text-sm font-medium text-slate-800">{employee.job_title}</p>
-                              <p className="text-sm text-slate-500">{employee.department}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(employee.status)}>
-                              {employee.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-slate-600">
-                            {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : '-'}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
-                                title="Edit"
-                                onClick={() => handleOpenEmployeeModal(employee)}
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-                                title="Delete"
-                                onClick={() => handleDeleteEmployee(employee)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </>
+          <AttendanceRecordsTab />
         )}
 
         {activeTab === 'positions' && (
