@@ -301,15 +301,15 @@ export default function EmployeesPage() {
   const [departmentFilter, setDepartmentFilter] = React.useState('all');
   const [statusFilter, setStatusFilter] = React.useState('all');
   // Start with 'directory' for both server and client to avoid hydration mismatch
-  const [activeTab, setActiveTab] = React.useState<'directory' | 'records' | 'attendance' | 'positions' | 'departments'>('directory');
+  const [activeTab, setActiveTab] = React.useState<'directory' | 'records' | 'positions' | 'departments'>('directory');
   const [isHydrated, setIsHydrated] = React.useState(false);
 
   // Load saved tab from localStorage after hydration
   React.useEffect(() => {
     setIsHydrated(true);
     const savedTab = localStorage.getItem('hr-employees-active-tab');
-    if (savedTab && ['directory', 'records', 'attendance', 'positions', 'departments'].includes(savedTab)) {
-      setActiveTab(savedTab as 'directory' | 'records' | 'attendance' | 'positions' | 'departments');
+    if (savedTab && ['directory', 'records', 'positions', 'departments'].includes(savedTab)) {
+      setActiveTab(savedTab as 'directory' | 'records' | 'positions' | 'departments');
     }
   }, []);
 
@@ -1219,16 +1219,6 @@ export default function EmployeesPage() {
             Employee Records
           </button>
           <button
-            onClick={() => setActiveTab('attendance')}
-            className={`px-4 py-2 font-medium ${
-              activeTab === 'attendance'
-                ? 'text-blue-600 border-b-2 border-blue-600 -mb-0.5'
-                : 'text-slate-600 hover:text-slate-800'
-            }`}
-          >
-            Attendance
-          </button>
-          <button
             onClick={() => setActiveTab('positions')}
             className={`px-4 py-2 font-medium ${
               activeTab === 'positions'
@@ -1516,10 +1506,6 @@ export default function EmployeesPage() {
               </CardContent>
             </Card>
           </>
-        )}
-
-        {activeTab === 'attendance' && (
-          <AttendanceRecordsTab />
         )}
 
         {activeTab === 'positions' && (
