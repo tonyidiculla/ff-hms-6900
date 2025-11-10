@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('HMS HR Positions Create Error:', error);
+    console.error('HMS HR Positions Error:', error);
     return NextResponse.json(
-      { error: 'Failed to create position in HRMS' }, 
+      { error: 'Failed to fetch positions from HRMS' }, 
       { status: 500 }
     );
   }

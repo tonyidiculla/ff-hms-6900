@@ -26,6 +26,7 @@ export default function EmployeesPage() {
   const [departments, setDepartments] = React.useState<any[]>([]);
   const [positions, setPositions] = React.useState<any[]>([]);
   const [roles, setRoles] = React.useState<any[]>([]);
+  const [jobGrades, setJobGrades] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [directoryLoading, setDirectoryLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -117,7 +118,9 @@ export default function EmployeesPage() {
     employee_job_title: '',
     department: '',
     platform_role_name: '',
+    job_grade: '',
     address: '',
+    is_manager: false,
     is_active: true,
   });
 
@@ -126,6 +129,7 @@ export default function EmployeesPage() {
     fetchDepartments();
     fetchPositions();
     fetchRoles();
+    fetchJobGrades();
     fetchDirectory();
   }, []);
 
@@ -184,6 +188,18 @@ export default function EmployeesPage() {
       }
     } catch (err) {
       console.error('Failed to fetch roles');
+    }
+  };
+
+  const fetchJobGrades = async () => {
+    try {
+      const response = await fetch('/api/hr/compensation/guide');
+      if (response.ok) {
+        const data = await response.json();
+        setJobGrades(data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch job grades');
     }
   };
 
@@ -692,7 +708,9 @@ export default function EmployeesPage() {
         employee_job_title: position.employee_job_title || '',
         department: position.department || '',
         platform_role_name: position.platform_role_name || '',
+        job_grade: position.job_grade || '',
         address: position.entity_address || '',
+        is_manager: position.is_manager ?? false,
         is_active: position.is_active ?? true,
       });
     } else {
@@ -701,7 +719,9 @@ export default function EmployeesPage() {
         employee_job_title: '',
         department: '',
         platform_role_name: '',
+        job_grade: '',
         address: '',
+        is_manager: false,
         is_active: true,
       });
     }
@@ -719,7 +739,20 @@ export default function EmployeesPage() {
       const checked = (e.target as HTMLInputElement).checked;
       setPositionFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setPositionFormData(prev => ({ ...prev, [name]: value }));
+      setPositionFormData(prev => {
+        const newData = { ...prev, [name]: value };
+        
+        // If job_grade changes, check if the new grade allows managers
+        if (name === 'job_grade') {
+          const selectedGrade = jobGrades.find(g => g.job_grade === value);
+          // Auto-uncheck is_manager if the selected grade doesn't allow managers
+          if (selectedGrade?.is_manager !== true && prev.is_manager) {
+            newData.is_manager = false;
+          }
+        }
+        
+        return newData;
+      });
     }
   };
 
@@ -1246,6 +1279,7 @@ export default function EmployeesPage() {
                     <TableRow>
                       <TableHead className="uppercase text-xs">Position Title</TableHead>
                       <TableHead className="uppercase text-xs">Department</TableHead>
+                      <TableHead className="uppercase text-xs">Job Grade</TableHead>
                       <TableHead className="uppercase text-xs">Level</TableHead>
                       <TableHead className="uppercase text-xs">Position Status</TableHead>
                       <TableHead className="uppercase text-xs">Active</TableHead>
@@ -1276,8 +1310,16 @@ export default function EmployeesPage() {
                       })
                       .map((position) => (
                       <TableRow key={position.id} className="hover:bg-slate-50">
-                        <TableCell className="font-medium text-slate-800">{position.employee_job_title}</TableCell>
+                        <TableCell className="font-medium text-slate-800">
+                          <div className="flex items-center gap-2">
+                            {position.employee_job_title}
+                            {position.is_manager && (
+                              <Badge className="bg-purple-100 text-purple-800 text-xs">Manager</Badge>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-sm text-slate-600">{position.department}</TableCell>
+                        <TableCell className="font-semibold text-slate-900">{position.job_grade || '-'}</TableCell>
                         <TableCell className="text-sm text-slate-600">{position.platform_role_name || 'Standard'}</TableCell>
                         <TableCell>
                           <Badge className={position.is_filled ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}>
@@ -2346,6 +2388,26 @@ export default function EmployeesPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
+                Job Grade <span className="text-red-500">*</span>
+              </label>
+              <select
+                name="job_grade"
+                value={positionFormData.job_grade}
+                onChange={handlePositionFormChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select Job Grade</option>
+                {jobGrades.map((grade) => (
+                  <option key={grade.id} value={grade.job_grade}>
+                    {grade.job_grade}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Work Address
               </label>
               <Input
@@ -2356,6 +2418,28 @@ export default function EmployeesPage() {
                 placeholder="Enter work location address"
                 className="w-full"
               />
+            </div>
+
+            <div className="flex items-center">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <input
+                  type="checkbox"
+                  name="is_manager"
+                  checked={positionFormData.is_manager}
+                  onChange={handlePositionFormChange}
+                  disabled={
+                    !positionFormData.job_grade || 
+                    jobGrades.find(g => g.job_grade === positionFormData.job_grade)?.is_manager !== true
+                  }
+                  className={`w-4 h-4 text-blue-600 rounded focus:ring-blue-500 ${
+                    !positionFormData.job_grade || 
+                    jobGrades.find(g => g.job_grade === positionFormData.job_grade)?.is_manager !== true
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : ''
+                  }`}
+                />
+                Manager Position
+              </label>
             </div>
 
             <div className="flex items-center">

@@ -149,6 +149,7 @@ export const hmsNavigation: NavigationItem[] = [
       { name: 'Performance', href: '/hr/performance' },
       { name: 'Training', href: '/hr/training' },
       { name: 'Rostering', href: '/hr/rostering' },
+      { name: 'Compensation & Benefits', href: '/hr/compensation' },
     ],
   },
   {
