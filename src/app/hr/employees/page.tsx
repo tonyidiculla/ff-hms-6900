@@ -301,15 +301,15 @@ export default function EmployeesPage() {
   const [departmentFilter, setDepartmentFilter] = React.useState('all');
   const [statusFilter, setStatusFilter] = React.useState('all');
   // Start with 'directory' for both server and client to avoid hydration mismatch
-  const [activeTab, setActiveTab] = React.useState<'directory' | 'records' | 'positions' | 'departments'>('directory');
+  const [activeTab, setActiveTab] = React.useState<'directory' | 'records' | 'attendance' | 'positions' | 'departments'>('directory');
   const [isHydrated, setIsHydrated] = React.useState(false);
 
   // Load saved tab from localStorage after hydration
   React.useEffect(() => {
     setIsHydrated(true);
     const savedTab = localStorage.getItem('hr-employees-active-tab');
-    if (savedTab && ['directory', 'records', 'positions', 'departments'].includes(savedTab)) {
-      setActiveTab(savedTab as 'directory' | 'records' | 'positions' | 'departments');
+    if (savedTab && ['directory', 'records', 'attendance', 'positions', 'departments'].includes(savedTab)) {
+      setActiveTab(savedTab as 'directory' | 'records' | 'attendance' | 'positions' | 'departments');
     }
   }, []);
 
@@ -1219,6 +1219,16 @@ export default function EmployeesPage() {
             Employee Records
           </button>
           <button
+            onClick={() => setActiveTab('attendance')}
+            className={`px-4 py-2 font-medium ${
+              activeTab === 'attendance'
+                ? 'text-blue-600 border-b-2 border-blue-600 -mb-0.5'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+          >
+            Attendance
+          </button>
+          <button
             onClick={() => setActiveTab('positions')}
             className={`px-4 py-2 font-medium ${
               activeTab === 'positions'
@@ -1354,6 +1364,161 @@ export default function EmployeesPage() {
         )}
 
         {activeTab === 'records' && (
+          <>
+            <Card className="border-2">
+              <CardContent className="py-3 px-4">
+                <div className="flex gap-3 items-center">
+                  <Input
+                    type="text"
+                    placeholder="Search employees by name, email, or phone..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button onClick={fetchEmployees} variant="primary">
+                    Search
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2">
+              <CardHeader className="border-b-2 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Employees</CardTitle>
+                    <p className="text-sm text-slate-500 mt-1">{employees.length} total employees</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline">Export</Button>
+                    <Button variant="primary" onClick={() => handleOpenEmployeeModal()}>Add Employee</Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {loading ? (
+                  <div className="p-8 text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="mt-2 text-sm text-slate-500">Loading employees...</p>
+                  </div>
+                ) : error ? (
+                  <div className="p-8 text-center">
+                    <p className="text-red-600 mb-4">{error}</p>
+                    <Button onClick={fetchEmployees} variant="primary">Retry</Button>
+                  </div>
+                ) : employees.length === 0 ? (
+                  <div className="p-8 text-center text-slate-500">
+                    <p>No employees found</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="uppercase text-xs">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            <span>Employee</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="uppercase text-xs">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4" />
+                            <span>Contact</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="uppercase text-xs">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4" />
+                            <span>Role</span>
+                          </div>
+                        </TableHead>
+                        <TableHead className="uppercase text-xs">Status</TableHead>
+                        <TableHead className="uppercase text-xs">Hire Date</TableHead>
+                        <TableHead className="uppercase text-xs">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {employees.map((employee) => (
+                        <TableRow key={employee.id || employee.employee_id} className="hover:bg-slate-50">
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              {employee.avatar_url ? (
+                                <Image
+                                  src={employee.avatar_url}
+                                  alt={`${employee.first_name} ${employee.last_name}`}
+                                  width={40}
+                                  height={40}
+                                  className="w-10 h-10 rounded-full object-cover shrink-0"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold shrink-0">
+                                  {getInitials(employee.first_name, employee.last_name)}
+                                </div>
+                              )}
+                              <div>
+                                <p className="font-medium text-slate-800">
+                                  {employee.first_name} {employee.last_name}
+                                </p>
+                                <p className="text-sm text-slate-500">{employee.employee_id}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm text-slate-800">{employee.email}</p>
+                              <p className="text-sm text-slate-500">{employee.phone}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="text-sm font-medium text-slate-800">{employee.job_title}</p>
+                              <p className="text-sm text-slate-500">{employee.department}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(employee.status)}>
+                              {employee.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-600">
+                            {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : '-'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
+                                title="Edit"
+                                onClick={() => handleOpenEmployeeModal(employee)}
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                                title="Delete"
+                                onClick={() => handleDeleteEmployee(employee)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {activeTab === 'attendance' && (
           <AttendanceRecordsTab />
         )}
 
