@@ -83,6 +83,7 @@ export default function EmployeesPage() {
     // Personal details (from profiles)
     personal_email: '',
     personal_contact_number: '',
+    date_of_birth: '',
     personal_address: '',
     personal_city: '',
     personal_state: '',
@@ -260,6 +261,7 @@ export default function EmployeesPage() {
         entity_country: employee.entity_country || '',
         personal_email: employee.personal_email || '',
         personal_contact_number: employee.personal_contact_number || '',
+        date_of_birth: employee.date_of_birth ? new Date(employee.date_of_birth).toISOString().split('T')[0] : '',
         personal_address: employee.personal_address || '',
         personal_city: employee.personal_city || '',
         personal_state: employee.personal_state || '',
@@ -295,6 +297,7 @@ export default function EmployeesPage() {
         entity_country: '', // Will be set from hospital data
         personal_email: '',
         personal_contact_number: '',
+        date_of_birth: '',
         personal_address: '',
         personal_city: '',
         personal_state: '',
@@ -373,6 +376,7 @@ export default function EmployeesPage() {
         setFormData(prev => ({
           ...prev,
           user_platform_id: '',
+          date_of_birth: '',
           personal_address: '',
           personal_city: '',
           personal_state: '',
@@ -422,6 +426,7 @@ export default function EmployeesPage() {
           ...prev,
           user_platform_id: response.data.user_platform_id || '',
           employee_entity_id: idsResponse.data.employee_entity_id || '',
+          date_of_birth: response.data.date_of_birth ? new Date(response.data.date_of_birth).toISOString().split('T')[0] : prev.date_of_birth,
           personal_address: response.data.address || prev.personal_address,
           personal_city: response.data.city || prev.personal_city,
           personal_state: response.data.state || prev.personal_state,
@@ -444,6 +449,7 @@ export default function EmployeesPage() {
           ...prev,
           user_platform_id: idsResponse.data.user_platform_id || '',
           employee_entity_id: idsResponse.data.employee_entity_id || '',
+          date_of_birth: '',
           personal_address: '',
           personal_city: '',
           personal_state: '',
@@ -1791,6 +1797,23 @@ export default function EmployeesPage() {
                     : '10'} digits only
                 </p>
               </div>
+            </div>
+
+            {/* Date of Birth */}
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">
+                  Date of Birth
+                </label>
+                <Input
+                  type="date"
+                  name="date_of_birth"
+                  value={formData.date_of_birth}
+                  onChange={handleFormChange}
+                  className="w-full"
+                />
+              </div>
+              <div></div>
             </div>
 
             {/* Auto-search Result Display - Only for new employees */}
