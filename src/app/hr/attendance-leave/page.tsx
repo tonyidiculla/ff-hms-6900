@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { hrApiClient } from '@/lib/api/hr-client';
+import { CheckCircle, XCircle, TrendingUp, Calendar } from 'lucide-react';
 
 export default function AttendanceLeavePage() {
   const [attendance, setAttendance] = React.useState<any[]>([]);
@@ -86,7 +87,7 @@ export default function AttendanceLeavePage() {
                   <p className="text-2xl font-bold text-slate-800">{presentCount}</p>
                 </div>
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
-                  <span className="text-green-600 text-xl">✓</span>
+                  <CheckCircle className="w-6 h-6 text-green-600" />
                 </div>
               </div>
             </CardContent>
@@ -100,7 +101,7 @@ export default function AttendanceLeavePage() {
                   <p className="text-2xl font-bold text-slate-800">{absentCount}</p>
                 </div>
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
-                  <span className="text-red-600 text-xl">✗</span>
+                  <XCircle className="w-6 h-6 text-red-600" />
                 </div>
               </div>
             </CardContent>
@@ -114,7 +115,7 @@ export default function AttendanceLeavePage() {
                   <p className="text-2xl font-bold text-slate-800">{attendanceRate}%</p>
                 </div>
                 <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center shrink-0">
-                  <span className="text-purple-600 text-xl">📊</span>
+                  <TrendingUp className="w-6 h-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
@@ -128,7 +129,7 @@ export default function AttendanceLeavePage() {
                   <p className="text-2xl font-bold text-slate-800">{pendingLeave}</p>
                 </div>
                 <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0">
-                  <span className="text-yellow-600 text-xl">📅</span>
+                  <Calendar className="w-6 h-6 text-yellow-600" />
                 </div>
               </div>
             </CardContent>
