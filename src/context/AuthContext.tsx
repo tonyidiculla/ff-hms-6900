@@ -132,8 +132,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     console.log('[AuthContext] Session data cleared, redirecting to login page...');
     
-    // Redirect to local login page
-    window.location.href = '/auth/login';
+    // Redirect to home page (login page)
+    window.location.href = '/';
   };
 
   return (
