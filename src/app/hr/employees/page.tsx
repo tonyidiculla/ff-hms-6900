@@ -367,8 +367,20 @@ export default function EmployeesPage() {
         // Automatically trigger search with the full number including ISD
         handleSearchExistingProfile(processedValue);
       } else {
-        // Clear search result if less than 12 digits
+        // Clear search result and previously populated data if less than 12 digits
         setProfileSearchResult(null);
+        // Clear user_platform_id and address fields that were auto-populated
+        setFormData(prev => ({
+          ...prev,
+          user_platform_id: '',
+          personal_address: '',
+          personal_city: '',
+          personal_state: '',
+          personal_postal_code: '',
+          personal_country: '',
+          emergency_contact_name: '',
+          emergency_contact: '',
+        }));
       }
     }
   };
@@ -419,7 +431,7 @@ export default function EmployeesPage() {
           emergency_contact: response.data.emergency_contact || prev.emergency_contact,
         }));
       } else {
-        // Generate new IDs
+        // Profile not found - clear any previously populated data and generate new IDs
         const idsResponse = await hrApiClient.generateEmployeeIds('E019nC8m3');
         
         if (idsResponse.error) {
@@ -432,6 +444,13 @@ export default function EmployeesPage() {
           ...prev,
           user_platform_id: idsResponse.data.user_platform_id || '',
           employee_entity_id: idsResponse.data.employee_entity_id || '',
+          personal_address: '',
+          personal_city: '',
+          personal_state: '',
+          personal_postal_code: '',
+          personal_country: '',
+          emergency_contact_name: '',
+          emergency_contact: '',
         }));
       }
     } catch (error) {
@@ -760,16 +779,20 @@ export default function EmployeesPage() {
     e.preventDefault();
     try {
       if (editingPosition) {
+        console.log('[Employees Page] Updating position:', editingPosition.id, 'with data:', positionFormData);
         const response = await hrApiClient.updatePosition(editingPosition.id, positionFormData);
+        console.log('[Employees Page] Update response:', response);
         if (response.error) {
           console.error('Failed to update position:', response.error);
           const errorMsg = response.data?.details ? `${response.error}: ${response.data.details}` : response.error;
           alert('Failed to update position: ' + errorMsg);
           return;
         }
+        console.log('[Employees Page] Position updated successfully');
       } else {
         console.log('Creating position with data:', positionFormData);
         const response = await hrApiClient.createPosition(positionFormData);
+        console.log('[Employees Page] Create response:', response);
         if (response.error) {
           console.error('Failed to create position:', response.error, response.data);
           const errorMsg = response.data?.details ? `${response.error}: ${response.data.details}` : response.error;
