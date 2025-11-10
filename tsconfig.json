@@ -40,7 +40,7 @@
         "./src/hooks/*"
       ],
       "@ff-shared/*": [
-        "../ff-auth-6800/*"
+        "./src/*"
       ]
     }
   },

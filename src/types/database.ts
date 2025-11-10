@@ -255,21 +255,62 @@ export interface EMRCatalogOfAssets {
 // ============================================
 
 /**
- * Hospital Appointments
+ * Hospital Appointments - Unified table with EMR access controls (OTP-based)
  */
 export interface HospitalAppointment {
   id: string
-  entity_platform_id: string // Hospital reference through hospital_master.entity_platform_id
-  pet_platform_id: string
-  owner_user_platform_id: string // Simple direct reference to pet owner
-  // CORRECTED: Doctor should reference through employee_entity_id from employee_seat_assignment
-  doctor_employee_entity_id?: string // References employee_seat_assignment.employee_entity_id
+  appointment_number?: string
+
+  // Pet reference
+  pet_platform_id: string // A01xxxxxx style IDs
+
+  // Owner reference
+  owner_user_platform_id: string // H00xxxxxx identifiers
+
+  // Entity reference (hospital / clinic location)
+  entity_platform_id: string // E01xxxxxx identifiers
+
+  // Doctor reference (platform user id)
+  doctor_user_platform_id?: string
+  // Legacy dual-role reference maintained for backward compatibility
+  doctor_employee_entity_id?: string
+
+  // Booking metadata
+  booking_source?: string // owner-self, hospital-phone, hospital-online, etc.
+  booked_by_user_platform_id?: string
+
+  // Appointment details
   appointment_date: string
   appointment_time: string
-  appointment_type: string
+  duration_minutes?: number
+  appointment_type?: string
   status: string
   reason?: string
   notes?: string
+
+  // EMR access control (OTP lifecycle)
+  emr_access_granted: boolean
+  emr_otp_code?: string
+  emr_otp_verified: boolean
+  emr_otp_verified_at?: string
+  emr_otp_expires_at?: string
+  emr_otp_sent_to_owner: boolean
+  emr_otp_sent_at?: string
+
+  // Consultation write-access (active during visit)
+  emr_write_access_active: boolean
+  emr_write_access_started_at?: string
+  emr_write_access_ended_at?: string
+
+  // Read-access retention
+  emr_read_access_granted_at?: string
+
+  // Access revocation tracking
+  emr_access_revoked: boolean
+  emr_access_revoked_at?: string
+  emr_access_revoked_by?: string
+  emr_revocation_reason?: string
+
   created_at: string
   updated_at: string
 }
@@ -336,9 +377,9 @@ export interface InpatientAdmission {
  * Appointment with related details
  */
 export interface AppointmentWithDetails extends HospitalAppointment {
-  pet_name?: string
-  owner_name?: string
-  doctor_name?: string
+  pet?: PetMaster
+  owner?: Profile
+  doctor?: Profile
 }
 
 /**

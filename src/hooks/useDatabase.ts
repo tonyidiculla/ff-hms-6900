@@ -1,3 +1,61 @@
+import type { HospitalConsultation } from '@/types/database';
+/**
+ * Fetch consultations from outpatient API
+ */
+import useSWR from 'swr';
+export function useConsultationsAPI(filters?: {
+  hospitalId?: string;
+  petId?: string;
+  limit?: number;
+}) {
+  const params = new URLSearchParams();
+  if (filters?.hospitalId) params.append('hospital_id', filters.hospitalId);
+  if (filters?.petId) params.append('pet_id', filters.petId);
+  if (filters?.limit) params.append('limit', filters.limit.toString());
+  const url = `/api/core/consultations?${params.toString()}`;
+  const fetcher = (url: string) => fetch(url).then(res => res.json());
+  return useSWR(url, fetcher);
+}
+/**
+ * Fetch all consultations with optional filters
+ */
+export function useConsultations(filters?: {
+  entityPlatformId?: string
+  petPlatformId?: string
+  doctorEmployeeEntityId?: string
+  startDate?: string
+  endDate?: string
+}) {
+  return useQuery({
+    queryKey: ['consultations', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('hospital_consultations')
+        .select('*')
+        .order('consultation_date', { ascending: false });
+
+      if (filters?.entityPlatformId) {
+        query = query.eq('entity_platform_id', filters.entityPlatformId);
+      }
+      if (filters?.petPlatformId) {
+        query = query.eq('pet_platform_id', filters.petPlatformId);
+      }
+      if (filters?.doctorEmployeeEntityId) {
+        query = query.eq('doctor_employee_entity_id', filters.doctorEmployeeEntityId);
+      }
+      if (filters?.startDate) {
+        query = query.gte('consultation_date', filters.startDate);
+      }
+      if (filters?.endDate) {
+        query = query.lte('consultation_date', filters.endDate);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as HospitalConsultation[];
+    },
+  });
+}
 /**
  * React Query Hooks for Supabase Data
  * Uses @tanstack/react-query for caching and state management
@@ -90,16 +148,27 @@ export function useProfileWithRoles(userId?: string) {
       
       if (profileError) throw profileError
       
-      const { data: roleAssignments, error: rolesError } = await supabase
-        .from('user_expertise_assignment')
-        .select(`
-          *,
-          role:platform_roles(*)
-        `)
-        .eq('user_id', userId)
+      // Query employee_seat_assignment with platform_role_name
+      const { data: seatAssignments, error: seatError } = await supabase
+        .from('employee_seat_assignment')
+        .select('platform_role_name, is_active')
+        .eq('user_platform_id', profile.user_platform_id)
         .eq('is_active', true)
       
-      if (rolesError) throw rolesError
+      let roleAssignments = null
+      if (seatError) throw seatError
+      
+      // Get role details by display_name
+      if (seatAssignments && seatAssignments.length > 0) {
+        const roleNames = seatAssignments.map((s: any) => s.platform_role_name).filter(Boolean)
+        const { data: roles } = await supabase
+          .from('platform_roles')
+          .select('*')
+          .in('display_name', roleNames)
+          .eq('is_active', true)
+        
+        roleAssignments = roles
+      }
       
       return {
         ...profile,
@@ -167,17 +236,35 @@ export function useUserRoles(userId?: string) {
     queryFn: async () => {
       if (!userId) return []
       
-      const { data, error } = await supabase
-        .from('user_expertise_assignment')
-        .select(`
-          *,
-          role:platform_roles(*)
-        `)
+      // First get user_platform_id from profiles
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_platform_id')
         .eq('user_id', userId)
+        .single()
+      
+      if (!profile?.user_platform_id) return []
+      
+      // Then query employee_seat_assignment with platform_role_name
+      const { data, error } = await supabase
+        .from('employee_seat_assignment')
+        .select('platform_role_name, is_active')
+        .eq('user_platform_id', profile.user_platform_id)
         .eq('is_active', true)
       
       if (error) throw error
-      return data as (UserToRoleAssignment & { role: PlatformRole })[]
+      
+      // Get role details by display_name
+      if (!data || data.length === 0) return []
+      
+      const roleNames = data.map((d: any) => d.platform_role_name).filter(Boolean)
+      const { data: roles } = await supabase
+        .from('platform_roles')
+        .select('*')
+        .in('display_name', roleNames)
+        .eq('is_active', true)
+      
+      return roles || []
     },
     enabled: !!userId,
   })
@@ -369,6 +456,50 @@ export function usePetBreeds(speciesId?: string) {
       return data as PetBreed[]
     },
     enabled: !!speciesId,
+  })
+}
+
+// ============================================
+// HOSPITALS & ENTITIES
+// ============================================
+
+/**
+ * Get hospital with location/currency metadata
+ */
+export function useHospitalWithLocation(entityPlatformId?: string) {
+  return useQuery({
+    queryKey: ['hospital-location', entityPlatformId],
+    queryFn: async () => {
+      if (!entityPlatformId) return null
+
+      const { data: hospital, error: hospitalError } = await supabase
+        .from('hospital_master')
+        .select('*')
+        .eq('entity_platform_id', entityPlatformId)
+        .single()
+
+      if (hospitalError) throw hospitalError
+      if (!hospital) return null
+
+      if (hospital.country_code) {
+        const { data: locationData, error: locationError } = await supabase
+          .from('location_currency')
+          .select('*')
+          .eq('country_code', hospital.country_code)
+          .eq('is_active', true)
+          .single()
+
+        if (!locationError && locationData) {
+          return {
+            ...hospital,
+            location_currency: locationData,
+          }
+        }
+      }
+
+      return hospital
+    },
+    enabled: !!entityPlatformId,
   })
 }
 
@@ -654,7 +785,7 @@ export function useAppointments(filters?: {
     queryKey: ['appointments', filters],
     queryFn: async () => {
       let query = supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .select('*')
         .order('appointment_date', { ascending: true })
         .order('appointment_time', { ascending: true })
@@ -703,7 +834,7 @@ export function useAppointmentsWithDetails(filters?: {
     queryFn: async () => {
       // First fetch appointments
       let query = supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .select('*')
         .order('appointment_date', { ascending: true })
         .order('appointment_time', { ascending: true })
@@ -777,7 +908,7 @@ export function useAppointment(id: string | undefined) {
       if (!id) throw new Error('Appointment ID is required')
 
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .select('*')
         .eq('id', id)
         .single()
@@ -800,7 +931,7 @@ export function useAppointmentWithDetails(id: string | undefined) {
 
       // Fetch appointment
       const { data: appointment, error: appointmentError } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .select('*')
         .eq('id', id)
         .single()
@@ -836,7 +967,7 @@ export function useCreateAppointment() {
   return useMutation({
     mutationFn: async (appointment: Omit<HospitalAppointment, 'id' | 'created_at' | 'updated_at'>) => {
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .insert(appointment)
         .select()
         .single()
@@ -859,7 +990,7 @@ export function useUpdateAppointment() {
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<HospitalAppointment> }) => {
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update(updates)
         .eq('id', id)
         .select()
@@ -884,7 +1015,7 @@ export function useCancelAppointment() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update({ status: 'cancelled' })
         .eq('id', id)
         .select()
@@ -937,7 +1068,7 @@ export function useGenerateEMROTP() {
       const otp = Math.floor(100000 + Math.random() * 900000).toString()
       
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update({
           emr_otp_code: otp,
           emr_otp_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
@@ -972,7 +1103,7 @@ export function useSendOTPToOwner() {
       const otp = Math.floor(100000 + Math.random() * 900000).toString()
       
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update({
           emr_otp_code: otp,
           emr_otp_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
@@ -1010,7 +1141,7 @@ export function useVerifyEMROTP() {
     mutationFn: async ({ appointmentId, otpCode }: { appointmentId: string; otpCode: string }) => {
       // First fetch appointment to verify OTP
       const { data: appointment, error: fetchError } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .select('*')
         .eq('id', appointmentId)
         .single()
@@ -1027,7 +1158,7 @@ export function useVerifyEMROTP() {
 
       // Update to verified and grant read access
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update({
           emr_otp_verified: true,
           emr_otp_verified_at: new Date().toISOString(),
@@ -1038,6 +1169,16 @@ export function useVerifyEMROTP() {
         .single()
 
       if (error) throw error
+
+      if (data?.pet_platform_id) {
+        try {
+          await supabase.rpc('sync_otp_verification_for_pet', {
+            p_pet_platform_id: data.pet_platform_id,
+          })
+        } catch (rpcError) {
+          console.error('Failed to sync OTP verification for pet appointments:', rpcError)
+        }
+      }
       return data as HospitalAppointment
     },
     onSuccess: (data: HospitalAppointment) => {
@@ -1057,7 +1198,7 @@ export function useStartConsultation() {
   return useMutation({
     mutationFn: async (appointmentId: string) => {
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update({
           status: 'in-progress',
           emr_write_access_active: true,
@@ -1086,7 +1227,7 @@ export function useEndConsultation() {
   return useMutation({
     mutationFn: async (appointmentId: string) => {
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update({
           status: 'completed',
           emr_write_access_active: false,
@@ -1123,7 +1264,7 @@ export function useRevokeEMRAccess() {
       reason?: string 
     }) => {
       const { data, error } = await supabase
-        .from('hospitals_appointments')
+        .from('hospital_appointments')
         .update({
           emr_access_revoked: true,
           emr_access_revoked_at: new Date().toISOString(),
@@ -1164,7 +1305,7 @@ export function useRealtimeAppointments(entityPlatformId?: string) {
           {
             event: '*',
             schema: 'public',
-            table: 'hospitals_appointments',
+            table: 'hospital_appointments',
             filter: `entity_platform_id=eq.${entityPlatformId}`,
           },
           () => {
@@ -1179,4 +1320,46 @@ export function useRealtimeAppointments(entityPlatformId?: string) {
     },
     enabled: !!entityPlatformId,
   })
+}
+
+// ============================================
+// APPOINTMENT SUPPORT HELPERS (RPC WRAPPERS)
+// ============================================
+
+export async function fetchEntityAppointmentStaff(entityPlatformId: string) {
+  if (!entityPlatformId) return []
+
+  const { data, error } = await supabase.rpc('get_entity_appointment_staff', {
+    p_entity_platform_id: entityPlatformId,
+  })
+
+  if (error) throw error
+  return data ?? []
+}
+
+export async function fetchEmployeeAvailableSlots(
+  entityPlatformId: string,
+  employeeAssignmentId: string,
+  date: string
+) {
+  if (!entityPlatformId || !employeeAssignmentId || !date) return []
+
+  const { data, error } = await supabase.rpc('get_employee_available_slots', {
+    p_entity_platform_id: entityPlatformId,
+    p_employee_assignment_id: employeeAssignmentId,
+    p_date: date,
+  })
+
+  if (error) throw error
+  return data ?? []
+}
+
+export async function syncOtpVerificationForPet(petPlatformId: string) {
+  if (!petPlatformId) return
+
+  const { error } = await supabase.rpc('sync_otp_verification_for_pet', {
+    p_pet_platform_id: petPlatformId,
+  })
+
+  if (error) throw error
 }

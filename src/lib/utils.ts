@@ -45,3 +45,15 @@ export function formatDate(
   };
   return new Intl.DateTimeFormat('en-US', defaultOptions).format(new Date(date));
 }
+
+/**
+ * Format a date object to a time string
+ * @param date - The date object to format
+ * @returns Formatted time string
+ */
+export function formatTime(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}

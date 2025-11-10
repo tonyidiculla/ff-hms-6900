@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-const PUBLIC_PATHS = new Set<string>(['/healthcheck', '/auth/login', '/auth/callback', '/auth/signup'])
+const PUBLIC_PATHS = new Set<string>(['/healthcheck', '/auth/login', '/auth/callback', '/auth/signup', '/'])
 
 async function getSupabaseSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -47,7 +47,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Allow public paths
+  // Allow public paths (including home page)
   if (PUBLIC_PATHS.has(pathname)) {
     return NextResponse.next()
   }
@@ -60,11 +60,11 @@ export async function proxy(request: NextRequest) {
   console.log('[HMS Proxy] Session found:', !!session);
   
   if (!session) {
-    console.log('[HMS Proxy] No session found, redirecting to login');
-    // No session - redirect to login page
-    const loginUrl = new URL('/auth/login', request.url);
-    loginUrl.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(loginUrl);
+    console.log('[HMS Proxy] No session found, redirecting to home');
+    // No session - redirect to home page which will show login UI
+    const homeUrl = new URL('/', request.url);
+    homeUrl.searchParams.set('redirectTo', pathname);
+    return NextResponse.redirect(homeUrl);
   }
   
   console.log('[HMS Proxy] Valid session, allowing access');

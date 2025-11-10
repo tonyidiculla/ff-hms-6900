@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     // Get user profile from database (user_id is the PRIMARY KEY)
     const { data: profile, error: profileError } = await supabase
-      .from('profiles_with_auth')
+      .from('profiles')
       .select('*')
       .eq('user_id', session.user.id)
       .single();
@@ -70,67 +70,38 @@ export async function GET(request: NextRequest) {
         jobTitle = seatAssignment.employee_job_title;
       }
 
-      // Get the role assignments from user_expertise_assignment
-      const { data: roleAssignments, error: roleError } = await supabase
-        .from('user_expertise_assignment')
-        .select('platform_role_id, is_active')
-        .eq('user_platform_id', profile.user_platform_id)
+      // Check employee_seat_assignment for platform_role_name
+      const { data: seatRoleAssignments, error: seatRoleError } = await supabase
+        .from('employee_seat_assignment')
+        .select('platform_role_name, is_active')
+        .eq('user_id', session.user.id)
         .eq('is_active', true);
 
-      console.log('[Auth API] Role assignments from user_expertise_assignment:', { 
-        count: roleAssignments?.length,
-        roleError,
-        roleAssignments 
-      });
+      console.log('[Auth API] Seat role assignments:', { seatRoleAssignments, seatRoleError });
 
-      if (roleError) {
-        console.error('[Auth API] Role fetch error:', roleError);
-      }
+      if (seatRoleAssignments && seatRoleAssignments.length > 0) {
+        const roleNames = seatRoleAssignments
+          .map(r => r.platform_role_name)
+          .filter(Boolean);
 
-      if (roleAssignments && roleAssignments.length > 0) {
-        // Get the role IDs
-        const roleIds = roleAssignments.map(r => r.platform_role_id);
-        console.log('[Auth API] Role IDs to fetch:', roleIds);
-        
-        // Now fetch the actual role details
-        const { data: roles, error: rolesError } = await supabase
-          .from('platform_roles')
-          .select('id, role_name, display_name, privilege_level')
-          .in('id', roleIds)
-          .order('privilege_level', { ascending: true });
+        if (roleNames.length > 0) {
+          // Get role details by display_name (platform_role_name maps to display_name)
+          const { data: rolesByName, error: rolesByNameError } = await supabase
+            .from('platform_roles')
+            .select('role_name, display_name, privilege_level')
+            .in('display_name', roleNames)
+            .eq('is_active', true)
+            .order('privilege_level', { ascending: true });
 
-        console.log('[Auth API] Roles fetched:', { 
-          count: roles?.length,
-          rolesError,
-          roles 
-        });
+          console.log('[Auth API] Roles by name:', { rolesByName, rolesByNameError });
 
-        if (rolesError) {
-          console.error('[Auth API] Roles fetch error:', rolesError);
-        }
-
-        if (roles && roles.length > 0) {
-          // Use the first role (already sorted by privilege level)
-          const primaryRole = roles[0];
-          console.log('[Auth API] Primary role selected:', primaryRole);
-          
-          // Store privilege level
-          privilegeLevel = primaryRole.privilege_level;
-          
-          // Use display_name if available, otherwise format role_name
-          if (primaryRole.display_name) {
-            userRole = primaryRole.display_name;
-          } else {
-            const roleName = primaryRole.role_name || '';
-            userRole = roleName
-              .split('_')
-              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-              .join(' ');
+          if (rolesByName && rolesByName.length > 0) {
+            const primaryRole = rolesByName[0];
+            privilegeLevel = primaryRole.privilege_level;
+            userRole = primaryRole.display_name || primaryRole.role_name || 'User';
+            console.log('[Auth API] Role from employee_seat_assignment:', userRole, 'Privilege Level:', privilegeLevel);
           }
-          console.log('[Auth API] Final userRole:', userRole, 'Privilege Level:', privilegeLevel);
         }
-      } else {
-        console.log('[Auth API] No active role assignments found for user');
       }
     }
 

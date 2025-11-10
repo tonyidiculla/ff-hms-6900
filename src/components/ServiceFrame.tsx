@@ -12,20 +12,11 @@ export const ServiceFrame: React.FC<ServiceFrameProps> = ({ url, serviceName }) 
   const [frameUrl, setFrameUrl] = useState<string>('');
 
   useEffect(() => {
-    // Get the authentication token from cookies
-    const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('furfield_token='))
-      ?.split('=')[1];
-
-    // Append the token as a query parameter to the iframe URL
-    if (token) {
-      const separator = url.includes('?') ? '&' : '?';
-      setFrameUrl(`${url}${separator}auth_token=${token}`);
-    } else {
-      setFrameUrl(url);
-    }
-  }, [url]);
+    // All services use cookie-based authentication
+    // The user's session cookies will be automatically sent with the iframe requests
+    console.log('[ServiceFrame] Using cookie-based authentication for', serviceName, 'at', url);
+    setFrameUrl(url);
+  }, [url, serviceName]);
 
   const handleLoad = () => {
     setIsLoading(false);

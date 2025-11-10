@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -454,19 +454,21 @@ export default function AppointmentsPage() {
     }
 
     try {
-      const { data, error } = await supabase
-        .rpc('get_entity_appointment_staff', {
-          p_entity_platform_id: entityPlatformId
-        });
+      // Use HR API to fetch employees for the entity
+      const response = await fetch(`/api/proxy/hr/employees?entity_platform_id=${entityPlatformId}&status=active`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      if (error) {
-        console.error('Error fetching staff:', error);
-        setAvailableStaff([]);
-        return;
+      if (!response.ok) {
+        throw new Error('Failed to fetch staff');
       }
 
+      const data = await response.json();
       console.log('Available staff:', data);
-      setAvailableStaff(data || []);
+      setAvailableStaff(data?.data || []);
     } catch (error) {
       console.error('Error fetching staff:', error);
       setAvailableStaff([]);
@@ -481,21 +483,69 @@ export default function AppointmentsPage() {
 
     setLoadingSlots(true);
     try {
-      const { data, error } = await supabase
-        .rpc('get_employee_available_slots', {
-          p_entity_platform_id: entityPlatformId,
-          p_employee_assignment_id: employeeAssignmentId,
-          p_date: date
-        });
+      // Call Outpatient API to get available slots
+      // TODO: This endpoint needs to be implemented in ff-outp-6830 microservice
+      // The microservice should handle slot generation and availability checking
+      const response = await fetch(
+        `/api/proxy/outpatient/slots?entity_platform_id=${entityPlatformId}&employee_id=${employeeAssignmentId}&date=${date}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-      if (error) {
-        console.error('Error fetching slots:', error);
-        setAvailableSlots([]);
+      if (!response.ok) {
+        // If API endpoint doesn't exist yet, fall back to client-side slot generation
+        console.warn('Slots API endpoint not available, using fallback slot generation');
+        
+        // Generate default slots
+        const defaultSlots = [
+          { slot_time: '09:00', is_available: true },
+          { slot_time: '09:30', is_available: true },
+          { slot_time: '10:00', is_available: true },
+          { slot_time: '10:30', is_available: true },
+          { slot_time: '11:00', is_available: true },
+          { slot_time: '11:30', is_available: true },
+          { slot_time: '14:00', is_available: true },
+          { slot_time: '14:30', is_available: true },
+          { slot_time: '15:00', is_available: true },
+          { slot_time: '15:30', is_available: true },
+          { slot_time: '16:00', is_available: true },
+          { slot_time: '16:30', is_available: true },
+        ];
+
+        // Check existing appointments through API
+        const appointmentsResponse = await fetch(
+          `/api/proxy/outpatient/appointments?entity_platform_id=${entityPlatformId}&date=${date}&doctor_id=${employeeAssignmentId}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        let bookedTimes = new Set();
+        if (appointmentsResponse.ok) {
+          const appointmentsData = await appointmentsResponse.json();
+          const appointments = appointmentsData?.data || [];
+          bookedTimes = new Set(appointments.map((apt: any) => apt.appointment_time));
+        }
+
+        const availableSlots = defaultSlots.map(slot => ({
+          ...slot,
+          is_available: !bookedTimes.has(slot.slot_time)
+        }));
+
+        setAvailableSlots(availableSlots);
         return;
       }
 
+      const data = await response.json();
       console.log('Available slots:', data);
-      setAvailableSlots(data || []);
+      setAvailableSlots(data?.data || []);
     } catch (error) {
       console.error('Error fetching slots:', error);
       setAvailableSlots([]);
@@ -1075,32 +1125,10 @@ export default function AppointmentsPage() {
 
   return (
     <ContentArea>
-      <VStack size="lg">
-        <div className="flex items-center justify-between shrink-0">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
-            <p className="text-gray-600 mt-2">Manage and schedule pet appointments</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsAddPetModalOpen(true)}
-              className="hms-btn dept-outpatient"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add Pet
-            </button>
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="hms-btn hms-btn-primary"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Appointment
-            </button>
-          </div>
+      <VStack size="sm">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-3xl font-bold text-slate-800">Appointments</h1>
+          <p className="text-sm text-slate-500">Manage and schedule pet appointments</p>
         </div>
 
         {/* Filters */}
@@ -1144,8 +1172,25 @@ export default function AppointmentsPage() {
           title="All Appointments"
           scrollable={true}
           headerActions={
-            <div className="flex items-center gap-2">
-              <span className="hms-badge dept-outpatient">Outpatient</span>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setIsAddPetModalOpen(true)}
+                className="hms-btn dept-outpatient"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Pet
+              </button>
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="hms-btn hms-btn-primary"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Appointment
+              </button>
             </div>
           }
         >
@@ -2657,7 +2702,6 @@ export default function AppointmentsPage() {
           </div>
         </form>
       </Modal>
-      
       </VStack>
     </ContentArea>
   );

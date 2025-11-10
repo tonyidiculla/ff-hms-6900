@@ -1,3 +1,59 @@
+// Database schema types for chat module compatibility
+export interface Database {
+  public: {
+    Tables: {
+      chat_channels: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          type: 'public' | 'private' | 'direct';
+          created_by: string;
+          created_at: string;
+          updated_at: string;
+          is_active: boolean;
+          entity_platform_id: string;
+          is_private: boolean;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          type: 'public' | 'private' | 'direct';
+          created_by: string;
+        };
+      };
+      chat_messages: {
+        Row: {
+          id: string;
+          channel_id: string;
+          sender_id: string;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          channel_id: string;
+          sender_id: string;
+          content: string;
+        };
+      };
+      chat_channel_members: {
+        Row: {
+          id: string;
+          channel_id: string;
+          user_id: string;
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          channel_id: string;
+          user_id: string;
+        };
+      };
+    };
+  };
+}
 import { supabaseClientManager } from './supabase-manager';
 
 // Types for dual role system
@@ -94,11 +150,11 @@ export async function getUserRoles(userId: string): Promise<UserRoles | null> {
       return null;
     }
 
-    // Get platform-wide roles
+    // Get platform-wide roles from employee_seat_assignment
     const { data: platformRoleAssignments, error: platformError } = await supabase
-      .from('user_expertise_assignment')
+      .from('employee_seat_assignment')
       .select(`
-        platform_roles!inner(role_name)
+        platform_role_name
       `)
       .eq('user_platform_id', profile.user_platform_id)
       .eq('is_active', true);

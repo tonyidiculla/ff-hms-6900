@@ -41,11 +41,8 @@ const nextConfig = {
         source: '/api/finance/:path*',
         destination: 'http://localhost:6850/api/:path*',
       },
-      {
-        source: '/api/hr/:path*',
-        destination: 'http://localhost:6860/api/:path*',
-      },
-
+      // HR API requests handled by custom proxy at /api/hr/[...path]/route.ts
+      // This ensures proper bearer token forwarding to HRMS
       {
         source: '/api/purchasing/:path*',
         destination: 'http://localhost:6870/api/:path*',

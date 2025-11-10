@@ -55,6 +55,7 @@ interface ContentAreaProps {
 
 /**
  * Content area with responsive max-width and padding
+ * Standard width: 1200px fixed
  */
 export const ContentArea: React.FC<ContentAreaProps> = ({ 
   children, 
@@ -71,7 +72,7 @@ export const ContentArea: React.FC<ContentAreaProps> = ({
     '4xl': 'max-w-4xl',
     '5xl': 'max-w-5xl',
     '6xl': 'max-w-6xl',
-    '7xl': 'max-w-7xl',
+    '7xl': 'max-w-1200',
     'full': 'max-w-full'
   };
 

@@ -71,6 +71,9 @@ export const hmsNavigation: NavigationItem[] = [
     children: [
       { name: 'Admissions', href: '/inpatient/admissions' },
       { name: 'Ward Management', href: '/inpatient/wards' },
+      { name: 'Bed Management', href: '/inpatient/beds' },
+      { name: 'Patient Transfers', href: '/inpatient/transfers' },
+      { name: 'Discharge Planning', href: '/inpatient/discharge' },
     ],
   },
   {
@@ -84,6 +87,9 @@ export const hmsNavigation: NavigationItem[] = [
     ),
     children: [
       { name: 'Inventory', href: '/pharmacy/inventory' },
+      { name: 'Prescription Dispensing', href: '/pharmacy/dispensing' },
+      { name: 'Drug Interactions', href: '/pharmacy/interactions' },
+      { name: 'Pharmacy Billing', href: '/pharmacy/billing' },
     ],
   },
   {
@@ -97,6 +103,8 @@ export const hmsNavigation: NavigationItem[] = [
     ),
     children: [
       { name: 'Lab Tests', href: '/diagnostics/lab' },
+      { name: 'Imaging & Radiology', href: '/diagnostics/imaging' },
+      { name: 'Pathology Reports', href: '/diagnostics/pathology' },
     ],
   },
   {
@@ -140,7 +148,7 @@ export const hmsNavigation: NavigationItem[] = [
       { name: 'Attendance & Leave', href: '/hr/attendance-leave' },
       { name: 'Performance', href: '/hr/performance' },
       { name: 'Training', href: '/hr/training' },
-      { name: 'Rostering', href: '/rostering' },
+      { name: 'Rostering', href: '/hr/rostering' },
     ],
   },
   {
@@ -168,9 +176,14 @@ export const hmsNavigation: NavigationItem[] = [
       </svg>
     ),
     children: [
-      { name: 'Accounts', href: '/finance/accounts' },
-      { name: 'Invoicing', href: '/finance/invoicing' },
-      { name: 'Reports', href: '/finance/reports' },
+      { name: 'Chart of Accounts', href: '/finance/gl/chart-of-accounts' },
+      { name: 'Journal Entries', href: '/finance/gl/journal-entries' },
+      { name: 'Accounts Payable', href: '/finance/ap' },
+      { name: 'Accounts Receivable', href: '/finance/ar' },
+      { name: 'Banking & Cash', href: '/finance/banking' },
+      { name: 'Budgeting & Forecasting', href: '/finance/budgeting' },
+      { name: 'Fixed Assets', href: '/finance/assets' },
+      { name: 'Payroll', href: '/finance/payroll' },
     ],
   },
   {

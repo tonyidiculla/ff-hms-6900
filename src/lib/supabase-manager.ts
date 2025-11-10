@@ -93,19 +93,40 @@ class SupabaseClientManager {
   
   private setupDebugMonitoring(): void {
     // Override console.warn to catch multiple client warnings
-    const originalWarn = console.warn;
+    const patchedConsole = console as typeof console & { __hmsWarnPatched?: boolean };
+
+    if (patchedConsole.__hmsWarnPatched) return;
+
+    const originalWarn = console.warn.bind(console);
+    const originalGroup = console.group?.bind(console);
+    const originalGroupEnd = console.groupEnd?.bind(console);
+    const originalInfo = console.info?.bind(console) ?? console.log.bind(console);
+
+    patchedConsole.__hmsWarnPatched = true;
+
     console.warn = (...args: any[]) => {
-      const message = args.join(' ');
+      const message = args
+        .map((arg) => {
+          if (typeof arg === 'string') return arg;
+          try {
+            return JSON.stringify(arg);
+          } catch {
+            return String(arg);
+          }
+        })
+        .join(' ');
+
       if (message.includes('Multiple GoTrueClient instances detected')) {
-        console.group('[HMS Client Manager] Multiple Client Warning Intercepted');
-        console.warn('🚨 Original warning:', ...args);
-        console.warn('📊 Current active clients:', this.getActiveClients());
-        console.warn('📈 Client count:', this.getClientCount());
-        console.warn('💡 This should not happen with the client manager active');
-        console.groupEnd();
-      } else {
-        originalWarn.apply(console, args);
+        originalGroup?.('[HMS Client Manager] Multiple Client Warning Intercepted');
+        originalWarn('🚨 Original warning:', ...args);
+        originalInfo('📊 Current active clients:', this.getActiveClients());
+        originalInfo('📈 Client count:', this.getClientCount());
+        originalInfo('💡 This should not happen with the client manager active');
+        originalGroupEnd?.();
+        return;
       }
+
+      originalWarn(...args);
     };
   }
 }

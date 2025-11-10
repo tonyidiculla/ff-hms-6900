@@ -34,6 +34,7 @@ export default function RootLayout({
               
               {/* Sidebar and Content below Header */}
               <div className="flex flex-1">
+                <div className="w-64 shrink-0" /> {/* Spacer for fixed sidebar */}
                 <Sidebar navigation={hmsNavigation} />
                 <main className="flex-1 overflow-hidden relative flex flex-col">
                   {children}
