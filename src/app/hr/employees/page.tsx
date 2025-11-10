@@ -53,11 +53,15 @@ function AttendanceRecordsTab() {
   const fetchEmployees = async () => {
     try {
       const response = await hrApiClient.fetchEmployees();
-      if (response.data) {
-        setEmployees(response.data || []);
+      if (response.data && Array.isArray(response.data)) {
+        setEmployees(response.data);
+      } else {
+        console.warn('Employees data is not an array:', response.data);
+        setEmployees([]);
       }
     } catch (err) {
       console.error('Error fetching employees:', err);
+      setEmployees([]);
     }
   };
 
@@ -134,7 +138,7 @@ function AttendanceRecordsTab() {
               className="px-3 py-2 border-2 border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Employees</option>
-              {employees.map((emp) => (
+              {Array.isArray(employees) && employees.map((emp) => (
                 <option key={emp.employee_entity_id} value={emp.employee_entity_id}>
                   {emp.first_name} {emp.last_name}
                 </option>
