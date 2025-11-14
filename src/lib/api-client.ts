@@ -355,10 +355,10 @@ export class SubscriptionApi {
  * Routes all outpatient operations to ff-outp-6830 microservice
  */
 export class OutpatientApi {
-  private static baseUrl = OUTPATIENT_API_BASE;
+  private static baseUrl = API_BASE_URL; // Use HMS gateway instead of direct outpatient service
 
   /**
-   * Get appointments
+   * Get appointments via HMS Gateway
    */
   static async getAppointments(params?: {
     hospital_id?: string;
@@ -366,7 +366,7 @@ export class OutpatientApi {
     limit?: string;
   }) {
     const query = params ? `?${new URLSearchParams(params).toString()}` : '';
-    return ApiClient.request(`${this.baseUrl}/api/core/appointments${query}`, {
+    return ApiClient.request(`${this.baseUrl}/api/outpatient-gateway/appointments${query}`, {
       method: 'GET',
     });
   }
@@ -382,7 +382,7 @@ export class OutpatientApi {
   }
 
   /**
-   * Get billing records
+   * Get billing records via HMS Gateway
    */
   static async getBillingRecords(params?: {
     hospital_id?: string;
@@ -390,23 +390,87 @@ export class OutpatientApi {
     limit?: string;
   }) {
     const query = params ? `?${new URLSearchParams(params).toString()}` : '';
-    return ApiClient.request(`${this.baseUrl}/api/core/billing${query}`, {
+    return ApiClient.request(`${this.baseUrl}/api/outpatient-gateway/billing${query}`, {
       method: 'GET',
     });
   }
 
   /**
-   * Create billing record
+   * Create billing record via HMS Gateway
    */
   static async createBillingRecord(billingData: any) {
-    return ApiClient.request(`${this.baseUrl}/api/core/billing`, {
+    return ApiClient.request(`${this.baseUrl}/api/outpatient-gateway/billing`, {
       method: 'POST',
       body: billingData,
     });
   }
 
   /**
-   * Get consultations/SOAP notes
+   * Search pets and owners
+   */
+  static async search(params: {
+    q: string;
+    type?: 'pets' | 'owners' | 'all';
+    limit?: string;
+  }) {
+    const query = `?${new URLSearchParams(params).toString()}`;
+    return ApiClient.request(`${API_BASE_URL}/api/outpatient-gateway/search${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Get pets
+   */
+  static async getPets(params?: {
+    owner_id?: string;
+    search?: string;
+    species?: string;
+    limit?: string;
+  }) {
+    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return ApiClient.request(`${API_BASE_URL}/api/outpatient-gateway/pets${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Create pet
+   */
+  static async createPet(petData: any) {
+    return ApiClient.request(`${API_BASE_URL}/api/outpatient-gateway/pets`, {
+      method: 'POST',
+      body: petData,
+    });
+  }
+
+  /**
+   * Get owners
+   */
+  static async getOwners(params?: {
+    search?: string;
+    email?: string;
+    phone?: string;
+    limit?: string;
+  }) {
+    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return ApiClient.request(`${API_BASE_URL}/api/outpatient-gateway/owners${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Create owner
+   */
+  static async createOwner(ownerData: any) {
+    return ApiClient.request(`${API_BASE_URL}/api/outpatient-gateway/owners`, {
+      method: 'POST',
+      body: ownerData,
+    });
+  }
+
+  /**
+   * Get consultations/SOAP notes via HMS Gateway
    */
   static async getConsultations(params?: {
     hospital_id?: string;
@@ -414,16 +478,16 @@ export class OutpatientApi {
     limit?: string;
   }) {
     const query = params ? `?${new URLSearchParams(params).toString()}` : '';
-    return ApiClient.request(`${this.baseUrl}/api/core/consultations${query}`, {
+    return ApiClient.request(`${this.baseUrl}/api/outpatient-gateway/consultations${query}`, {
       method: 'GET',
     });
   }
 
   /**
-   * Create consultation/SOAP note
+   * Create consultation/SOAP note via HMS Gateway
    */
   static async createConsultation(consultationData: any) {
-    return ApiClient.request(`${this.baseUrl}/api/core/consultations`, {
+    return ApiClient.request(`${this.baseUrl}/api/outpatient-gateway/consultations`, {
       method: 'POST',
       body: consultationData,
     });
@@ -433,28 +497,82 @@ export class OutpatientApi {
 /**
  * Inpatient API Service
  * Routes all inpatient operations to ff-inpa-6831 microservice
+ * Integrates with hospital_inpatients, pet_master, hospital_beds, and profiles tables
  */
 export class InpatientApi {
   private static baseUrl = INPATIENT_API_BASE;
 
   /**
-   * Get admissions
+   * Get admissions with full details (JOIN with pet_master, profiles, hospital_beds)
+   * Returns admission records with related pet, owner, and bed information
    */
   static async getAdmissions(params?: {
-    hospital_id?: string;
-    status?: string;
-    limit?: string;
+    entity_platform_id?: string; // Hospital filter
+    status?: 'active' | 'critical' | 'stable' | 'discharged';
+    pet_platform_id?: string; // Specific pet
+    user_platform_id?: string; // Pet owner filter
+    admission_date_from?: string; // Date range start
+    admission_date_to?: string; // Date range end
+    limit?: number;
+    offset?: number;
   }) {
-    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
-    return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions${query}`, {
+    // Direct fetch to the admission endpoint
+    try {
+      const url = `${this.baseUrl}/api/inpatient/admissions`;
+      console.log('InpatientApi.getAdmissions - Calling URL:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('InpatientApi.getAdmissions - Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('InpatientApi.getAdmissions - Response data:', data);
+      
+      return data;
+    } catch (error) {
+      console.error('InpatientApi.getAdmissions error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get single admission by ID with full details
+   */
+  static async getAdmissionById(id: string) {
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions/${id}`, {
       method: 'GET',
     });
   }
 
   /**
-   * Create admission
+   * Create new admission
+   * Links to existing pet_master and profiles records
    */
-  static async createAdmission(admissionData: any) {
+  static async createAdmission(admissionData: {
+    pet_platform_id: string;
+    user_platform_id: string;
+    entity_platform_id: string;
+    employee_entity_id?: string | null;
+    admission_date: string;
+    admission_reason: string;
+    current_condition: string;
+    treatment_plan: string;
+    primary_veterinarian_name: string;
+    bed_number: string;
+    expected_discharge_date?: string | null;
+    emr_record_id?: string | null;
+    ip_billing_notes?: string;
+    status?: 'active' | 'critical' | 'stable';
+  }) {
     return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions`, {
       method: 'POST',
       body: admissionData,
@@ -462,21 +580,225 @@ export class InpatientApi {
   }
 
   /**
-   * Update admission
+   * Update existing admission
    */
-  static async updateAdmission(admissionData: any) {
-    return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions`, {
+  static async updateAdmission(id: string, admissionData: {
+    pet_platform_id?: string;
+    user_platform_id?: string;
+    entity_platform_id?: string;
+    employee_entity_id?: string;
+    admission_date?: string;
+    admission_reason?: string;
+    current_condition?: string;
+    treatment_plan?: string;
+    primary_veterinarian_name?: string;
+    bed_number?: string;
+    expected_discharge_date?: string;
+    actual_discharge_date?: string;
+    emr_record_id?: string;
+    ip_billing_notes?: string;
+    status?: 'active' | 'critical' | 'stable' | 'ready_for_discharge' | 'discharge_hold' | 'discharged';
+    discharge_hold_reason?: string | null;
+  }) {
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions/${id}`, {
       method: 'PUT',
       body: admissionData,
     });
   }
 
   /**
-   * Delete admission
+   * Discharge patient (sets actual_discharge_date and status)
+   */
+  static async dischargePatient(id: string, dischargeData: {
+    actual_discharge_date: string;
+    discharge_notes?: string;
+    final_condition?: string;
+  }) {
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions/${id}/discharge`, {
+      method: 'PATCH',
+      body: dischargeData,
+    });
+  }
+
+  /**
+   * Get vitals for an admission or pet
+   */
+  static async getVitals(params: {
+    admission_id?: string;
+    pet_platform_id?: string;
+    limit?: number;
+  }) {
+    const query = `?${new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value);
+        }
+        return acc;
+      }, {} as Record<string, string>)
+    ).toString()}`;
+    
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/vitals${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Create vitals record
+   */
+  static async createVitals(vitalsData: {
+    admission_id: string;
+    pet_platform_id: string;
+    entity_platform_id: string;
+    recorded_by?: string;
+    recorded_at?: string;
+    temperature?: number;
+    temperature_unit?: string;
+    heart_rate?: number;
+    respiratory_rate?: number;
+    blood_pressure_systolic?: number;
+    blood_pressure_diastolic?: number;
+    weight?: number;
+    weight_unit?: string;
+    oxygen_saturation?: number;
+    pain_score?: number;
+    mental_status?: string;
+    notes?: string;
+  }) {
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/vitals`, {
+      method: 'POST',
+      body: vitalsData,
+    });
+  }
+
+  /**
+   * Get treatment plan for an admission
+   */
+  static async getTreatmentPlan(admissionId: string) {
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/treatment/${admissionId}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Update treatment plan for an admission
+   */
+  static async updateTreatmentPlan(admissionId: string, treatmentData: {
+    treatment_plan?: string;
+    current_condition?: string;
+    status?: string;
+  }) {
+    console.log('[InpatientApi] updateTreatmentPlan called');
+    console.log('[InpatientApi] admissionId:', admissionId);
+    console.log('[InpatientApi] treatmentData:', treatmentData);
+    console.log('[InpatientApi] URL:', `${this.baseUrl}/api/inpatient/treatment/${admissionId}`);
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/treatment/${admissionId}`, {
+      method: 'PUT',
+      body: treatmentData,
+    });
+  }
+
+  /**
+   * Get progress notes for an admission
+   */
+  static async getProgressNotes(params: {
+    admission_id: string;
+    limit?: number;
+  }) {
+    const query = `?${new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value);
+        }
+        return acc;
+      }, {} as Record<string, string>)
+    ).toString()}`;
+    
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/notes${query}`, {
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Create progress note
+   */
+  static async createProgressNote(noteData: {
+    admission_id: string;
+    note_text: string;
+    note_type?: string;
+    recorded_by?: string;
+    is_important?: boolean;
+  }) {
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/notes`, {
+      method: 'POST',
+      body: noteData,
+    });
+  }
+
+  /**
+   * Delete admission record (soft delete - sets is_active to false)
    */
   static async deleteAdmission(id: string) {
-    return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions?id=${id}`, {
+    return ApiClient.request(`${this.baseUrl}/api/inpatient/admissions/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+
+
+  /**
+   * Search pets for admission (from pet_master table)
+   */
+  static async searchPets(params: {
+    entity_platform_id: string; // Hospital filter
+    search?: string; // Pet name or microchip search
+    user_platform_id?: string; // Owner filter
+    species?: string; // Species filter
+    limit?: number;
+  }) {
+    const query = `?${new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value);
+        }
+        return acc;
+      }, {} as Record<string, string>)
+    ).toString()}`;
+    
+    // Use the HMS Gateway proxy path instead of direct microservice URL
+    const url = `/api/inpatient/pets/search${query}`;
+    console.log('InpatientApi.searchPets - Calling URL:', url);
+    console.log('InpatientApi.searchPets - Params:', params);
+    
+    const response = await ApiClient.request(url, {
+      method: 'GET',
+    });
+    
+    console.log('InpatientApi.searchPets - Response:', response);
+    console.log('InpatientApi.searchPets - Response.data:', response.data);
+    console.log('InpatientApi.searchPets - Response.data.data:', response.data?.data);
+    return response;
+  }
+
+  /**
+   * Search pet owners (from profiles table)
+   */
+  static async searchOwners(params: {
+    entity_platform_id: string; // Hospital filter
+    search?: string; // Name, email, or phone search
+    limit?: number;
+  }) {
+    const query = `?${new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value);
+        }
+        return acc;
+      }, {} as Record<string, string>)
+    ).toString()}`;
+    
+    // Use the HMS Gateway proxy path instead of direct microservice URL
+    return ApiClient.request(`/api/inpatient/owners/search${query}`, {
+      method: 'GET',
     });
   }
 }
@@ -639,46 +961,73 @@ export class OperationTheaterApi {
 }
 
 /**
- * HR Management API
+ * HR Management API - Routes through HMS Gateway
  */
 export class HRApi {
-  private static baseUrl = HR_API_BASE;
+  private static baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:6900';
 
   /**
-   * Get employees
+   * Get employees via HMS Gateway
    */
   static async getEmployees(params: Record<string, any> = {}) {
     const query = new URLSearchParams(params).toString();
-    return ApiClient.request(`${this.baseUrl}/api/employees${query ? `?${query}` : ''}`, {
-      method: 'GET',
-    });
+    try {
+      const response = await fetch(`${this.baseUrl}/api/hr/employees${query ? `?${query}` : ''}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      // Transform HMS Gateway response format to match expected API format
+      return {
+        success: true,
+        data: {
+          data: data.employees || [],
+          count: data.count || 0
+        }
+      };
+    } catch (error) {
+      console.error('HRApi.getEmployees error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        data: null
+      };
+    }
   }
 
   /**
-   * Create employee
+   * Create employee via HMS Gateway
    */
   static async createEmployee(employeeData: any) {
-    return ApiClient.request(`${this.baseUrl}/api/employees`, {
+    return ApiClient.request(`${this.baseUrl}/api/hr/employees`, {
       method: 'POST',
       body: employeeData,
     });
   }
 
   /**
-   * Update employee
+   * Update employee via HMS Gateway
    */
   static async updateEmployee(employeeData: any) {
-    return ApiClient.request(`${this.baseUrl}/api/employees`, {
+    return ApiClient.request(`${this.baseUrl}/api/hr/employees`, {
       method: 'PUT',
       body: employeeData,
     });
   }
 
   /**
-   * Delete employee
+   * Delete employee via HMS Gateway
    */
   static async deleteEmployee(id: string) {
-    return ApiClient.request(`${this.baseUrl}/api/employees?id=${id}`, {
+    return ApiClient.request(`${this.baseUrl}/api/hr/employees?id=${id}`, {
       method: 'DELETE',
     });
   }
